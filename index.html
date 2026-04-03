@@ -163,7 +163,7 @@
             @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
             
             /* Alça (Drag Handle) e Carrossel */
-            .sheet-handle { display: flex; justify-content: center; align-items: center; width: 100%; height: 30px; background: transparent; margin: 0; flex-shrink: 0; position: relative; cursor: grab;}
+            .sheet-handle { display: flex; justify-content: center; align-items: center; width: 100%; height: 30px; background: transparent; margin: 0; flex-shrink: 0; cursor: grab; }
             .sheet-handle::after { content: ''; display: block; width: 40px; height: 5px; background: #ccc; border-radius: 5px; }
             .panel { padding: 10px 20px 20px 20px; flex: 1; overflow-y: auto; }
             .carousel-bar { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); flex-direction: column; background: rgba(0,0,0,0.6); padding: 10px 6px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; max-height: 60vh; overflow-y: auto;}
@@ -1805,10 +1805,20 @@
         let tagTop = tagBottom - (isTagExibida && tag && !isQuote ? tagFaixaHeight : 0);
 
         // CONTROLE INTELIGENTE DO EIXO X
-        const tPosX_Input = document.getElementById('tPosX');
+        // Setup das bordas e eixo X
+        const tPosX_Input = document.getElementById('tPosX'); 
         const padX = tPosX_Input ? parseInt(tPosX_Input.value) : 70;
-        let textStartX = (isQuote && align === 'left') ? (padX + 50) : padX; 
-        let maxW = isQuote ? (1080 - (padX * 2) - 50) : (1080 - (padX * 2));
+        
+        let maxW = 1080 - (padX * 2);
+        let textStartX = padX;
+
+        // Ajustes finos para o Modo Citação (Abre espaço para a linha não encostar no texto)
+        if (isQuote) {
+            maxW = maxW - 50; // Diminui a largura do texto para caber a barra lateral
+            if (align === 'left') {
+                textStartX = padX + 50; // Empurra o texto para a direita
+            }
+        }
 
         if (isLive) {
             let liveY = tagTop - 25; ctx.fillStyle = "red"; ctx.beginPath();
@@ -1818,41 +1828,34 @@
             else { ctx.font = `bold 22px "${font}"`; let w = ctx.measureText("AO VIVO").width; let startX = tx - (w/2) - 15; ctx.arc(startX, liveY - 6, 12, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFF"; ctx.textAlign = 'left'; ctx.fillText("AO VIVO", startX + 20, liveY); }
         }
 
+        // Simulação para descobrir a altura exata dos textos e não deixar a linha imensa
         let totalTextHeight = 0;
         if (isQuote && currentTextBlocks.length > 0) {
             ctx.save(); let simY = 0;
-            currentTextBlocks.forEach(b => { let wght = b.type === 'title' ? 'bold' : 'normal'; let bH = renderRichText(ctx, b.text, textStartX, simY, maxW, b.size, b.size * 1.3, align, false, wght, font, b.type==='list'?b.listType:'none', b.listColorToggle, mainColor, cDescColor, mainColor, bgColor) - simY; totalTextHeight += bH + 20; });
-            ctx.restore(); totalTextHeight -= 20; 
-        }
-
-        if (isQuote && currentTextBlocks.length > 0) {
-            ctx.fillStyle = "rgba(255,255,255,0.1)"; if(useCustomTextColors) { let colValues = hexToRgbValues(cTitleColor); ctx.fillStyle = `rgba(${colValues}, 0.15)`; }
-            ctx.font = `bold 350px "${font}"`; ctx.textAlign = 'left'; 
-            let aspasX = align === 'right' ? (1080 - padX - 60) : (padX - 10);
-            ctx.fillText("“", aspasX, posY + 100);
-            
-            if(align !== 'center') { 
-                ctx.fillStyle = mainColor; let lineX = align === 'right' ? 1080 - padX - 10 : padX; 
-                ctx.fillRect(lineX, posY - (refSize * 0.8), 10, totalTextHeight + (refSize * 0.5)); 
-            }
-        }
-        if (isQuote && currentTextBlocks.length > 0) {
-            ctx.save(); let simY = 0;
-            currentTextBlocks.forEach(b => {
-                let wght = b.type === 'title' ? 'bold' : 'normal';
-                let bH = renderRichText(ctx, b.text, textStartX, simY, maxW, b.size, b.size * 1.3, align, false, wght, font, b.type==='list'?b.listType:'none', b.listColorToggle, mainColor, cDescColor, mainColor, bgColor) - simY;
-                totalTextHeight += bH + 20;
+            currentTextBlocks.forEach(b => { 
+                let wght = b.type === 'title' ? 'bold' : 'normal'; 
+                let bH = renderRichText(ctx, b.text, textStartX, simY, maxW, b.size, b.size * 1.3, align, false, wght, font, b.type==='list'?b.listType:'none', b.listColorToggle, mainColor, cDescColor, mainColor, bgColor) - simY; 
+                totalTextHeight += bH + 20; 
             });
             ctx.restore(); totalTextHeight -= 20; 
         }
 
+        // Desenhando a Estética da Citação
         if (isQuote && currentTextBlocks.length > 0) {
-            ctx.fillStyle = "rgba(255,255,255,0.1)";
+            ctx.fillStyle = "rgba(255,255,255,0.1)"; 
             if(useCustomTextColors) { let colValues = hexToRgbValues(cTitleColor); ctx.fillStyle = `rgba(${colValues}, 0.15)`; }
-            ctx.font = `bold 350px "${font}"`; ctx.textAlign = 'left'; ctx.fillText("“", padX - 10, posY + 100);
+            
+            // Aspa Gigante APENAS na esquerda (e apenas se estiver alinhado à esquerda)
+            if (align === 'left') {
+                ctx.font = `bold 350px "${font}"`; ctx.textAlign = 'left'; 
+                ctx.fillText("“", padX - 10, posY + 100);
+            }
 
-            if(align !== 'center') {
-                ctx.fillStyle = mainColor; let lineX = align === 'right' ? 1080 - padX - 10 : padX; 
+            // Barra Lateral (Esquerda ou Direita)
+            if (align !== 'center') { 
+                ctx.fillStyle = mainColor; 
+                // A linha vai colar na margem e o texto terminará 40px antes dela!
+                let lineX = align === 'right' ? (1080 - padX - 10) : padX; 
                 ctx.fillRect(lineX, posY - (refSize * 0.8), 10, totalTextHeight + (refSize * 0.5)); 
             }
         }
