@@ -15,7 +15,8 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: var(--bg-app); display: flex; flex-direction: column; height: 100vh; height: 100dvh; width: 100%; top: 0; left: 0; position: fixed; overflow: hidden; }
         *, *::before, *::after { box-sizing: border-box; }
 
-        .sheet-handle { display: none; }
+        .sheet-handle { display: block; width: 60px; height: 25px; background: transparent; margin: 0 auto; flex-shrink: 0; position: relative; }
+        .sheet-handle::after { content: ''; display: block; width: 40px; height: 5px; background: #ccc; border-radius: 5px; position: absolute; top: 10px; left: 10px; }
 
         .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; overflow: hidden; position: relative; }
         
@@ -114,7 +115,7 @@
 
         .loading { display: none; font-size: 12px; color: #d9534f; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; background: #fff3f3; border: 1px solid #f5c6c6; margin-top: 5px; }
 
-        .mockup-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px); }
+        .mockup-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px); box-sizing: border-box; }
         .mockup-modal.active { display: flex; }
         .ig-post { background: #fff; width: 360px; max-width: 95vw; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: none;}
         .ig-header { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid #efefef; }
@@ -130,7 +131,7 @@
         .ig-icons { display: flex; gap: 15px; margin-bottom: 10px; font-size: 22px; color: #262626;}
         .ig-likes { font-weight: 600; font-size: 13px; margin-bottom: 6px; color: #262626;}
         .ig-caption { font-size: 13px; color: #262626; line-height: 1.4;}
-        .close-mockup { margin-top: 20px; padding: 12px 25px; background: white; color: #333; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .close-mockup { position: absolute; bottom: max(30px, env(safe-area-inset-bottom)); padding: 12px 25px; background: white; color: #333; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
         .close-mockup:hover { background: #ddd; }
         .loading-mockup { color: white; font-weight: bold; font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 15px;}
         .spinner { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #fff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
@@ -1313,25 +1314,24 @@
     }
 
     function addNewSlide() {
-        updateCurrentSlideState(); // Salva a tela atual
-        let newState = JSON.parse(JSON.stringify(slides[currentSlide])); 
-        newState.tagToggle = false; 
-        newState.userLogoData = ''; 
+        updateCurrentSlideState(); 
         
-        newState.textBlocks.forEach(b => {
-            if (b.type === 'title') b.text = "Card " + (slides.length + 1);
-            else if (b.type === 'body') b.text = "Espaço reservado para o texto...";
-            else if (b.type === 'list') b.text = "Item 1\nItem 2";
-        });
-        
-        if (newState.frameStyle && newState.frameStyle.includes('curve')) newState.frameStyle = 'line';
+        // REGRA DA CURVA (Se for criar o slide 2 e for curva direita, vira pra esquerda)
+        if (slides.length === 1) {
+            if (slides[0].frameStyle === 'curve_right') {
+                slides[0].frameStyle = 'curve_left';
+                document.getElementById('frameStyle').value = 'curve_left';
+            }
+        }
 
-        slides.push(newState);
-        isProgrammaticUpdate = true; // Impede duplo histórico
-        switchSlide(slides.length - 1, () => {
-            isProgrammaticUpdate = false;
-            forceSaveHistory(); // Snapshot final
-        }); 
+        let newState = JSON.parse(JSON.stringify(slides[currentSlide])); 
+        newState.tagToggle = false; newState.userLogoData = ''; 
+        newState.textBlocks.forEach(b => { if (b.type === 'title') b.text = "Card " + (slides.length + 1); else if (b.type === 'body') b.text = "Espaço reservado para o texto..."; else if (b.type === 'list') b.text = "Item 1\nItem 2"; });
+        
+        // Os slides 2 em diante viram 'line' se o tema usar curva
+        if (newState.frameStyle && newState.frameStyle.includes('curve')) newState.frameStyle = 'line';
+        
+        slides.push(newState); isProgrammaticUpdate = true; switchSlide(slides.length - 1, () => { isProgrammaticUpdate = false; forceSaveHistory(); }); 
     }
 
     function switchSlide(index, callback) {
@@ -2213,9 +2213,17 @@
         } catch(err) { alert("Erro ao ler o arquivo. Certifique-se de que é um projeto válido (.json)."); }
     }
 
-    function downloadCurrent(idxOverride) {
-        const link = document.createElement('a'); let idx = idxOverride ? idxOverride : (currentSlide + 1);
-        link.download = `soter-feed-slide-${idx}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+    function downloadCurrent(idxOverride) { 
+        let idx = idxOverride ? idxOverride : (currentSlide + 1); 
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a'); 
+            link.download = `soter-feed-slide-${idx}.png`; 
+            link.href = url; 
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 150);
+        }, 'image/png', 1.0);
     }
 
     async function downloadAll() {
@@ -2293,14 +2301,14 @@
         }, {passive: true});
 
         sheetHandle.addEventListener('touchmove', (e) => {
-            let deltaY = startY - e.touches[0].clientY;
-            let newHeight = startH + deltaY;
-            // Limita a expansão entre 20% e 85% da tela
-            if(newHeight > window.innerHeight * 0.2 && newHeight < window.innerHeight * 0.85) {
-                mPanel.style.maxHeight = newHeight + 'px';
-                mPanel.style.height = newHeight + 'px';
-            }
-        }, {passive: true});
+            e.preventDefault(); // <--- Trava a tela para a gaveta subir fluida
+            let deltaY = startY - e.touches[0].clientY; 
+            let newHeight = startH + deltaY; 
+            if(newHeight > window.innerHeight * 0.2 && newHeight < window.innerHeight * 0.85) { 
+                mPanel.style.maxHeight = newHeight + 'px'; 
+                mPanel.style.height = newHeight + 'px'; 
+            } 
+        }, {passive: false}); // passive false é obrigatório aqui
 
         sheetHandle.addEventListener('touchend', () => {
             mPanel.style.transition = '0.3s ease-out'; // Volta a ter animação suave
