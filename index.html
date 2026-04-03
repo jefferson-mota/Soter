@@ -239,9 +239,9 @@
 
             <div id="tab-project" class="panel">
                 <div class="control-group" style="border-left: 3px solid #d9534f; background: #fffcfc;">
-                    <span class="label-pequena" style="color: #d9534f;">⚡ Auto-Gerar (Extrair Matéria)</span>
+                    <span class="label-pequena" style="color: #d9534f;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Auto-Gerar (Extrair Matéria)</span>
                     <input type="text" id="newsLink" placeholder="Cole o link da matéria aqui...">
-                    <button class="btn-file" id="btnFetch" style="background: #d9534f; margin-top: 5px;" onclick="fetchMetadata()">⬇️ Puxar Dados do Site</button>
+                    <button class="btn-file" id="btnFetch" style="background: #d9534f; margin-top: 5px;" onclick="fetchMetadata()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Puxar Dados do Site</button>
                     <div id="loadingText" class="loading">Buscando dados... aguarde.</div>
                 </div>
 
@@ -250,8 +250,8 @@
                 <span class="label-pequena">Salvar / Carregar Projeto Editável</span>
                 <p style="font-size: 12px; color: #666; margin-top: 0;"><strong>Atalhos:</strong> <code>Ctrl+S</code> para salvar. <code>Ctrl+Z</code> para desfazer.</p>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-file" style="flex: 1;" onclick="saveProject()">💾 Salvar (.json)</button>
-                    <button class="btn-file" style="flex: 1; background: #666;" onclick="loadProjectModern()">📂 Abrir (.json)</button>
+                    <button class="btn-file" style="flex: 1;" onclick="saveProject()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Salvar (.json)</button>
+                    <button class="btn-file" style="flex: 1; background: #666;" onclick="loadProjectModern()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir (.json)</button>
                     <input type="file" id="projectLoad" accept=".json" style="display:none" onchange="loadProjectFallback(event)">
                 </div>
 
@@ -259,9 +259,9 @@
                 
                 <span class="label-pequena">Exportação de Imagens Finais</span>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn-file" onclick="downloadCurrent()">🖼️ Baixar Slide Atual</button>
-                    <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()">📚 Baixar Todos (Carrossel)</button>
-                    <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()">📦 Exportar Pacote Completo (ZIP)</button>
+                    <button class="btn-file" onclick="downloadCurrent()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Baixar Slide Atual</button>
+                    <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg> Baixar Todos (Carrossel)</button>
+                    <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Exportar Pacote Completo (ZIP)</button>
                 </div>
             </div>
 
@@ -272,8 +272,8 @@
                     <span class="label-pequena" style="color: #005b9f;">Pexels (Busca Grátis)</span>
                     <div style="display: flex; gap: 5px;">
                         <input type="text" id="pexelsSearch" placeholder="Ex: Negócios, Brasilia..." style="flex:1;">
-                        <button type="button" class="btn-file" onclick="searchPexels()" style="padding: 8px 12px;">🔍</button>
-                        <button type="button" class="btn-file" id="btnPexelsClear" onclick="clearPexels()" style="padding: 8px 12px; background: #666; display: none;">✖</button>
+                        <button type="button" class="btn-file" onclick="searchPexels()" style="padding: 8px 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                        <button type="button" class="btn-file" id="btnPexelsClear" onclick="clearPexels()" style="padding: 8px 12px; background: #666; display: none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     </div>
                     <div id="pexelsResults" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 5px; padding-bottom: 5px; min-height: 0px; scrollbar-width: thin;"></div>
                 </div>
@@ -281,25 +281,28 @@
                 <div class="control-group" style="border-left: 3px solid var(--accent-green);">
                     <div style="display:flex; justify-content: space-between; align-items: center;">
                         <span class="label-pequena">Foto Principal (Manual)</span>
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="solidBgToggle" onchange="generatePreview()"> Ocultar</label>
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="solidBgToggle" onchange="generatePreview(); toggleMediaControls()"> Ocultar</label>
                     </div>
                     <div style="display: flex; gap: 5px;">
                         <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
                             <span class="file-name-text" id="fn_bg">Nenhuma imagem</span>
                             <input type="file" id="imgLoad" accept="image/*">
                         </label>
-                        <button class="clear-img-btn" onclick="clearImg('bg')" title="Remover Foto">🗑️</button>
+                        <button class="clear-img-btn" onclick="clearImg('bg')" title="Remover Foto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                     
-                    <span class="label-pequena" style="margin-top: 5px;">Enquadramento (Arraste no preview)</span>
-                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
-                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
-                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO Y:</span><input type="range" id="posY" min="-1000" max="1000" value="0" oninput="sync(this, 'numY')"><input type="number" id="numY" value="0" oninput="sync(this, 'posY')"></div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top:5px;">
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipXToggle" onchange="generatePreview()"> Espelhar ↔</label>
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipYToggle" onchange="generatePreview()"> Espelhar ↕</label>
+                    <!-- CAIXA INTELIGENTE DE ENQUADRAMENTO -->
+                    <div id="bgControls" style="display: none; flex-direction: column; gap: 5px;">
+                        <span class="label-pequena" style="margin-top: 5px;">Enquadramento (Arraste no preview)</span>
+                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
+                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
+                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO Y:</span><input type="range" id="posY" min="-1000" max="1000" value="0" oninput="sync(this, 'numY')"><input type="number" id="numY" value="0" oninput="sync(this, 'posY')"></div>
+                        
+                        <div style="display: flex; gap: 15px; margin-top:5px;">
+                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipXToggle" onchange="generatePreview()"> Espelhar ↔</label>
+                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipYToggle" onchange="generatePreview()"> Espelhar ↕</label>
+                        </div>
                     </div>
                 </div>
 
@@ -307,11 +310,11 @@
                     <span class="label-pequena">Textura de Fundo / Watermark Global</span>
                     <div style="display: flex; gap: 5px;">
                         <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
                             <span class="file-name-text" id="fn_tpl">Nenhuma imagem</span>
                             <input type="file" id="bgTemplateLoad" accept="image/*">
                         </label>
-                        <button class="clear-img-btn" onclick="clearImg('tpl')" title="Remover Textura">🗑️</button>
+                        <button class="clear-img-btn" onclick="clearImg('tpl')" title="Remover Textura"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                 </div>
 
@@ -319,14 +322,15 @@
                     <span class="label-pequena" style="color: #005b9f;">Logo Institucional Livre</span>
                     <div style="display: flex; gap: 5px;">
                         <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
                             <span class="file-name-text" id="fn_user_logo">Nenhuma logo</span>
                             <input type="file" id="userLogoLoad" accept="image/png, image/jpeg">
                         </label>
-                        <button class="clear-img-btn" onclick="clearImg('user_logo')" title="Remover Logo">🗑️</button>
+                        <button class="clear-img-btn" onclick="clearImg('user_logo')" title="Remover Logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                    <!-- CAIXA INTELIGENTE DA LOGO -->
+                    <div id="logoControls" style="display: none; align-items: center; gap: 15px; margin-top: 10px;">
                         <div class="pos-grid">
                             <button class="pos-btn active" id="pos_TL" onclick="setLogoPos('TL')" title="Topo Esquerda"></button>
                             <button class="pos-btn" id="pos_TC" onclick="setLogoPos('TC')" title="Topo Centro"></button>
@@ -353,18 +357,18 @@
                 <div class="control-group" style="border-left: 3px solid #f0b900;">
                     <div style="display:flex; justify-content: space-between; align-items: center;">
                         <span class="label-pequena" style="color: #f0b900;">Rodapé Parceiros Externos</span>
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="useCustomFooterToggle" onchange="generatePreview()"> Ativar</label>
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="useCustomFooterToggle" onchange="applyGlobalCustomFooter()"> Ativar</label>
                     </div>
                     <div style="display: flex; gap: 5px;">
                         <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
                             <span class="file-name-text" id="fn_foot">Nenhuma imagem</span>
                             <input type="file" id="customFooterLoad" accept="image/png, image/jpeg">
                         </label>
-                        <button class="clear-img-btn" onclick="clearImg('foot')" title="Remover Rodapé">🗑️</button>
+                        <button class="clear-img-btn" onclick="clearImg('foot')" title="Remover Rodapé"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
                     <div style="margin-top: 5px;">
-                        <select id="customFooterBehavior" onchange="generatePreview()" style="font-size: 11px;">
+                        <select id="customFooterBehavior" onchange="applyGlobalCustomFooter()" style="font-size: 11px;">
                             <option value="all">Em todos os cards</option>
                             <option value="cover">Apenas na Capa (Slide 1)</option>
                             <option value="cover_last">Na Capa e no Último Card</option>
@@ -423,10 +427,16 @@
                     <!-- Blocos injetados via JS -->
                 </div>
 
-                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                    <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">➕ Título</button>
-                    <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">➕ Corpo</button>
-                    <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">➕ Lista</button>
+                <div style="display: flex; gap: 5px; margin-top: 15px; padding-bottom: 30px; flex-shrink: 0;">
+                    <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Título
+                    </button>
+                    <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="18" x2="3" y2="18"></line><line x1="21" y1="6" x2="3" y2="6"></line></svg> Corpo
+                    </button>
+                    <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Lista
+                    </button>
                 </div>
             </div>
 
@@ -501,17 +511,23 @@
                             <option value="@">@</option>
                             <option value="📱">📱</option>
                             <option value="👉">👉</option>
+                            <option value="•">•</option>
+                            <option value="✦">✦</option>
+                            <option value="—">—</option>
+                            <option value="|">|</option>
+                            <option value="©">©</option>
+                            <option value="®">®</option>
                             <option value="">-</option>
                         </select>
                         <input type="text" id="footerText" value="seusite.com.br" oninput="applyGlobalFooter()" placeholder="Texto da base..." style="flex: 1;">
-                        <input type="date" id="footerDate" onchange="applyGlobalFooter()" title="Data Polaroid" style="width: 110px; padding: 8px; font-size: 11px; border-radius: 6px; border: 1px solid #ccc;">
+                        <input type="date" id="footerDate" onchange="applyGlobalFooter()" title="Data Polaroid" style="display: none; width: 110px; padding: 8px; font-size: 11px; border-radius: 6px; border: 1px solid #ccc;">
                     </div>
                 </div>
 
                 <div class="control-group" style="border-left: 3px solid #d9534f;">
                     <span class="label-pequena" style="color: #d9534f;">Cobertura Especial</span>
                     <label class="checkbox-label" style="font-size:12px; font-weight: bold;">
-                        <input type="checkbox" id="liveToggle" onchange="generatePreview()"> 🔴 Ativar selo "Ao Vivo"
+                        <input type="checkbox" id="liveToggle" onchange="generatePreview()"> <svg width="12" height="12" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="12" cy="12" r="10"></circle></svg> Ativar selo "Ao Vivo"
                     </label>
                 </div>
 
@@ -589,12 +605,40 @@
         } catch(e) { console.log("Erro ao gerar padrões de textura", e); }
     }
 
+function injectSVGs() {
+        const svgMap = {
+            '📤': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>',
+            '🗑️': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
+            '🔍': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            '✖': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+            '⚡': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+            '⬇️': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+            '💾': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>',
+            '📂': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>',
+            '🖼️': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+            '📚': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg>',
+            '📦': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>',
+            '🔴': '<svg width="12" height="12" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="12" cy="12" r="10"></circle></svg>'
+        };
+
+        document.querySelectorAll('.btn-file, .btn-up-icon, .clear-img-btn, .label-pequena, .checkbox-label').forEach(el => {
+            let html = el.innerHTML;
+            for (const [emoji, svg] of Object.entries(svgMap)) {
+                if (html.includes(emoji)) {
+                    html = html.split(emoji).join(svg); // Substitui todas as aparições na linha
+                }
+            }
+            if(html !== el.innerHTML) el.innerHTML = html;
+        });
+    }
+
     let appStarted = false;
     function initApp() {
         if(appStarted) return;
         appStarted = true;
         
         generatePatterns();
+        injectSVGs();
         toggleWebFonts(); 
         
         currentTextBlocks = [
@@ -627,14 +671,12 @@
             
             let html = `
                 <div class="tb-header">
-                    <div class="tb-drag-handle" 
-                         onmousedown="this.closest('.tb-block').setAttribute('draggable', true)" 
-                         onmouseup="this.closest('.tb-block').removeAttribute('draggable')"
-                         onmouseleave="this.closest('.tb-block').removeAttribute('draggable')"
-                         ontouchstart="this.closest('.tb-block').setAttribute('draggable', true)"
-                         ontouchend="this.closest('.tb-block').removeAttribute('draggable')"
-                         title="Clique e arraste para reordenar">☰ ${typeName}</div>
-                    <button type="button" class="tb-del" title="Excluir Bloco" onclick="deleteTextBlock(${i})">🗑️</button>
+                    <div class="tb-drag-handle" title="Arraste para reordenar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px; vertical-align: middle;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> ${typeName}
+                    </div>
+                    <button type="button" class="tb-del" title="Excluir Bloco" onclick="deleteTextBlock(${i})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
                 </div>
             `;
 
@@ -873,7 +915,7 @@
 
         if(!url) return alert("Por favor, cole um link da matéria.");
         
-        btn.innerText = "Buscando...";
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Buscando...';
         loading.style.display = 'block'; 
         loading.style.color = '#333'; 
         loading.style.background = '#e6f2ff';
@@ -892,7 +934,7 @@
             } catch (e) { console.log("Tentando proxy alternativo..."); }
         }
 
-        btn.innerHTML = "⬇️ Puxar Dados do Site";
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Puxar Dados do Site';
 
         if (!htmlText) {
             loading.style.display = 'none';
@@ -1229,6 +1271,18 @@
         updateCurrentSlideState();
         generatePreview();
     }
+    
+    function applyGlobalCustomFooter() {
+        let toggle = document.getElementById('useCustomFooterToggle').checked; 
+        let behavior = document.getElementById('customFooterBehavior').value;
+        forceSaveHistory();
+        slides.forEach(s => { 
+            s.useCustomFooterToggle = toggle; 
+            s.customFooterBehavior = behavior; 
+            s.customFooterData = customFooterImg.src; // Clona a imagem para todos os slides!
+        });
+        updateCurrentSlideState(); generatePreview();
+    }
 
     function getFormState() {
         let alignVal = 'left';
@@ -1258,59 +1312,24 @@
     }
 
     function renderCarouselBar() {
-        const bar = document.getElementById('carouselBar');
-        bar.innerHTML = '';
-
-        let btnUndo = document.createElement('button');
-        btnUndo.id = 'btnUndo'; btnUndo.type = 'button'; btnUndo.innerHTML = '↶'; btnUndo.className = 'slide-btn aux-btn';
-        btnUndo.title = 'Desfazer (Ctrl+Z)'; btnUndo.onclick = undo; bar.appendChild(btnUndo);
-
-        let btnRedo = document.createElement('button');
-        btnRedo.id = 'btnRedo'; btnRedo.type = 'button'; btnRedo.innerHTML = '↷'; btnRedo.className = 'slide-btn aux-btn';
-        btnRedo.title = 'Refazer (Ctrl+Y)'; btnRedo.onclick = redo; bar.appendChild(btnRedo);
-
-        let div = document.createElement('div');
-        div.style = "width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 5px; flex-shrink: 0;";
-        bar.appendChild(div);
+        const bar = document.getElementById('carouselBar'); bar.innerHTML = '';
+        let btnUndo = document.createElement('button'); btnUndo.id = 'btnUndo'; btnUndo.type = 'button'; btnUndo.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>'; btnUndo.className = 'slide-btn aux-btn'; btnUndo.title = 'Desfazer (Ctrl+Z)'; btnUndo.onclick = undo; bar.appendChild(btnUndo);
+        let btnRedo = document.createElement('button'); btnRedo.id = 'btnRedo'; btnRedo.type = 'button'; btnRedo.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"></path></svg>'; btnRedo.className = 'slide-btn aux-btn'; btnRedo.title = 'Refazer (Ctrl+Y)'; btnRedo.onclick = redo; bar.appendChild(btnRedo);
+        let div = document.createElement('div'); div.style = "width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 5px; flex-shrink: 0;"; bar.appendChild(div);
         
         slides.forEach((slide, i) => {
-            let btn = document.createElement('button');
-            btn.type = 'button'; btn.innerText = (i + 1); btn.className = i === currentSlide ? 'slide-btn active' : 'slide-btn';
-            btn.draggable = true; 
-            
+            let btn = document.createElement('button'); btn.type = 'button'; btn.innerText = (i + 1); btn.className = i === currentSlide ? 'slide-btn active' : 'slide-btn'; btn.draggable = true; 
             btn.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', i); setTimeout(() => btn.style.opacity = '0.5', 0); });
             btn.addEventListener('dragend', () => { btn.style.opacity = '1'; document.querySelectorAll('.slide-btn').forEach(b => b.classList.remove('drag-over')); });
             btn.addEventListener('dragover', (e) => { e.preventDefault(); btn.classList.add('drag-over'); });
             btn.addEventListener('dragleave', () => { btn.classList.remove('drag-over'); });
-            btn.addEventListener('drop', (e) => {
-                e.preventDefault(); btn.classList.remove('drag-over');
-                let fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                let toIndex = i;
-                if (fromIndex !== toIndex && !isNaN(fromIndex)) {
-                    forceSaveHistory(); 
-                    let movedSlide = slides.splice(fromIndex, 1)[0];
-                    slides.splice(toIndex, 0, movedSlide);
-                    isProgrammaticUpdate = true;
-                    switchSlide(toIndex, () => forceSaveHistory()); 
-                }
-            });
-            btn.onclick = () => switchSlide(i);
-            bar.appendChild(btn);
+            btn.addEventListener('drop', (e) => { e.preventDefault(); btn.classList.remove('drag-over'); let fromIndex = parseInt(e.dataTransfer.getData('text/plain')); let toIndex = i; if (fromIndex !== toIndex && !isNaN(fromIndex)) { forceSaveHistory(); let movedSlide = slides.splice(fromIndex, 1)[0]; slides.splice(toIndex, 0, movedSlide); isProgrammaticUpdate = true; switchSlide(toIndex, () => forceSaveHistory()); } });
+            btn.onclick = () => switchSlide(i); bar.appendChild(btn);
         });
         
-        let addBtn = document.createElement('button');
-        addBtn.type = 'button'; addBtn.innerText = '+'; addBtn.className = 'slide-btn add'; addBtn.onclick = addNewSlide;
-        bar.appendChild(addBtn);
-
+        let addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>'; addBtn.className = 'slide-btn add'; addBtn.onclick = addNewSlide; bar.appendChild(addBtn);
         const btnAllTab = document.getElementById('btnDownAllTab');
-        if (slides.length > 1) {
-            let delBtn = document.createElement('button');
-            delBtn.type = 'button'; delBtn.innerHTML = '🗑️'; delBtn.className = 'slide-btn del'; delBtn.title = "Excluir Slide Atual"; delBtn.onclick = deleteCurrentSlide;
-            bar.appendChild(delBtn);
-            btnAllTab.style.display = 'block';
-        } else {
-            btnAllTab.style.display = 'none';
-        }
+        if (slides.length > 1) { let delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'; delBtn.className = 'slide-btn del'; delBtn.title = "Excluir Slide Atual"; delBtn.onclick = deleteCurrentSlide; bar.appendChild(delBtn); btnAllTab.style.display = 'block'; } else { btnAllTab.style.display = 'none'; }
         updateUndoRedoButtons();
     }
 
@@ -1973,35 +1992,47 @@
             }
         }
 
-        if (drawCustomFooter) {
-            let fW = 1080; let fH = 1080 / (customFooterImg.width / customFooterImg.height); ctx.drawImage(customFooterImg, 0, cH - fH, fW, fH);
-        }
-
+        if (drawCustomFooter) { let fW = 1080; let fH = 1080 / (customFooterImg.width / customFooterImg.height); ctx.drawImage(customFooterImg, 0, cH - fH, fW, fH); }
         if(!isProgrammaticUpdate && slides.length > 0) slides[currentSlide] = getFormState();
+        
+        // Executa a verificação dos menus dinâmicos
+        toggleMediaControls();
+        toggleThemeControls();
+    }
+
+    // --- FUNÇÃO INTELIGENTE DE MENUS ---
+    function toggleMediaControls() {
+        let bgControls = document.getElementById('bgControls');
+        let isSolid = document.getElementById('solidBgToggle') ? document.getElementById('solidBgToggle').checked : false;
+        // Se a foto principal existe E não está oculta: Mostra. Se não: Esconde.
+        if (bgControls) bgControls.style.display = (bgImage.src && bgImage.naturalWidth !== 0 && !isSolid) ? 'flex' : 'none';
+
+        let logoControls = document.getElementById('logoControls');
+        // Se a logo foi carregada: Mostra. Se não: Esconde.
+        if (logoControls) logoControls.style.display = (userLogoImg.src && userLogoImg.naturalWidth !== 0) ? 'flex' : 'none';
+    }
+
+    // --- NOVA FUNÇÃO INTELIGENTE DO TEMA ---
+    function toggleThemeControls() {
+        let fStyle = document.getElementById('frameStyle');
+        let fDate = document.getElementById('footerDate');
+        if (fStyle && fDate) {
+            // Se o tema escolhido for 'polaroid', mostra o campo de data. Se não, oculta!
+            fDate.style.display = (fStyle.value === 'polaroid') ? 'block' : 'none';
+        }
     }
 
     function clearImg(type) {
-        if(type === 'bg') {
-            bgImage.src = '';
-            document.getElementById('imgLoad').value = '';
-            document.getElementById('fn_bg').innerText = "Nenhuma imagem";
-        } else if(type === 'tpl') {
-            bgTemplateImg.src = '';
-            document.getElementById('bgTemplateLoad').value = '';
-            document.getElementById('fn_tpl').innerText = "Nenhuma imagem";
-        } else if(type === 'foot') {
-            customFooterImg.src = '';
-            document.getElementById('customFooterLoad').value = '';
-            document.getElementById('fn_foot').innerText = "Nenhuma imagem";
-            document.getElementById('useCustomFooterToggle').checked = false;
-        } else if(type === 'user_logo') {
-            userLogoImg.src = '';
-            document.getElementById('userLogoLoad').value = '';
-            document.getElementById('fn_user_logo').innerText = "Nenhuma logo";
-        }
-        forceSaveHistory();
-        updateCurrentSlideState();
-        generatePreview();
+        if(type === 'bg') { bgImage.src = ''; document.getElementById('imgLoad').value = ''; document.getElementById('fn_bg').innerText = "Nenhuma imagem"; } 
+        else if(type === 'tpl') { bgTemplateImg.src = ''; document.getElementById('bgTemplateLoad').value = ''; document.getElementById('fn_tpl').innerText = "Nenhuma imagem"; } 
+        else if(type === 'foot') { 
+            customFooterImg.src = ''; document.getElementById('customFooterLoad').value = ''; 
+            document.getElementById('fn_foot').innerText = "Nenhuma imagem"; 
+            document.getElementById('useCustomFooterToggle').checked = false; 
+            applyGlobalCustomFooter(); return; // Avisa a todo mundo que a foto sumiu!
+        } 
+        else if(type === 'user_logo') { userLogoImg.src = ''; document.getElementById('userLogoLoad').value = ''; document.getElementById('fn_user_logo').innerText = "Nenhuma logo"; }
+        forceSaveHistory(); updateCurrentSlideState(); generatePreview();
     }
 
     let isDragging = false;
@@ -2103,22 +2134,10 @@
     };
 
     document.getElementById('customFooterLoad').onchange = async e => {
-        let file = e.target.files[0];
-        if(!file) return;
-        updateFileName(e.target, 'fn_foot');
-        let b64 = await resizeAndCompressImage(file);
-        
-        await new Promise(resolve => {
-            customFooterImg.onload = resolve;
-            customFooterImg.onerror = resolve;
-            customFooterImg.src = b64;
-            if(customFooterImg.complete) resolve();
-        });
-
+        let file = e.target.files[0]; if(!file) return; updateFileName(e.target, 'fn_foot'); let b64 = await resizeAndCompressImage(file);
+        await new Promise(resolve => { customFooterImg.onload = resolve; customFooterImg.onerror = resolve; customFooterImg.src = b64; if(customFooterImg.complete) resolve(); });
         document.getElementById('useCustomFooterToggle').checked = true; 
-        forceSaveHistory();
-        updateCurrentSlideState();
-        generatePreview(); 
+        applyGlobalCustomFooter(); // Assim que carrega a foto, sincroniza globalmente!
     };
 
     document.getElementById('userLogoLoad').onchange = async e => {
@@ -2356,6 +2375,42 @@
         switchSlide(originalSlide); loading.style.display = 'none'; post.style.display = 'block'; closeBtn.style.display = 'block';
     }
     function closeMockup() { document.getElementById('mockupModal').classList.remove('active'); }
+    
+    // --- GESTO INTELIGENTE: SWIPE PARA TROCAR PÁGINAS (MOBILE) ---
+    const cWrapper = document.querySelector('.canvas-wrapper');
+    let swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
+
+    cWrapper.addEventListener('touchstart', e => {
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        swipeStartTime = Date.now(); // Cronômetro iniciado
+    }, {passive: true});
+
+    cWrapper.addEventListener('touchend', e => {
+        let swipeEndX = e.changedTouches[0].clientX;
+        let swipeEndY = e.changedTouches[0].clientY;
+        let swipeTime = Date.now() - swipeStartTime; // Tempo total do toque
+        
+        let deltaX = swipeEndX - swipeStartX; // Distância arrastada na horizontal
+        let deltaY = swipeEndY - swipeStartY; // Distância arrastada na vertical
+
+        // Se foi um "puxão" rápido (< 400ms), majoritariamente horizontal e de pelo menos 50px
+        if (swipeTime < 400 && Math.abs(deltaX) > 50 && Math.abs(deltaY) < 100) {
+            
+            // "Hack" profissional: Desfaz o movimento acidental da foto antes de trocar de página
+            document.getElementById('posX').value = initialPosX;
+            document.getElementById('numX').value = initialPosX;
+            document.getElementById('posY').value = initialPosY;
+            document.getElementById('numY').value = initialPosY;
+            
+            // Troca o slide!
+            if (deltaX < 0 && currentSlide < slides.length - 1) {
+                switchSlide(currentSlide + 1); // Puxou pra esquerda (Avança página)
+            } else if (deltaX > 0 && currentSlide > 0) {
+                switchSlide(currentSlide - 1); // Puxou pra direita (Volta página)
+            }
+        }
+    });
 </script>
 </body>
 </html>
