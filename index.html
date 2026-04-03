@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soter Feed Studio v16.6 (Ultimate Mobile & FX)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;700&family=DM+Sans:wght@400;700&family=Inter:wght@400;700;900&family=Lato:wght@400;700&family=League+Spartan:wght@400;700;900&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;700&family=Outfit:wght@400;700;900&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;700;800&family=Poppins:wght@400;700;900&family=Public+Sans:wght@400;700;900&family=Raleway:wght@400;700&family=Roboto:wght@400;700;900&family=Ubuntu:wght@400;700&family=Urbanist:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --primary-bg: #001a33; --accent-green: #76ce3f; --bg-app: #f0f2f5; --file-blue: #005b9f; --file-blue-hover: #00447a; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: var(--bg-app); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        *, *::before, *::after { box-sizing: border-box; }
+        
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; overflow: hidden; position: relative; }
+        
+        .preview-pane { flex: 1; min-height: 0; max-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #222; padding: 20px; position: relative; gap: 10px;}
+        
+        .project-title-badge { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; z-index: 50; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .project-title-badge svg { width: 16px; height: 16px; stroke: currentColor; }
+
+        .canvas-wrapper { height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 0;}
+        canvas { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #000; cursor: grab; transition: aspect-ratio 0.4s ease-in-out; }
+        canvas:active { cursor: grabbing; }
+
+        .carousel-bar { display: flex; gap: 8px; background: rgba(255,255,255,0.1); padding: 6px 15px; border-radius: 50px; backdrop-filter: blur(5px); overflow-x: auto; overflow-y: hidden; max-width: 100%; align-items: center; min-height: 44px; box-sizing: border-box; margin-bottom: 5px;}
+        .carousel-bar::-webkit-scrollbar { display: none; }
+        
+        .slide-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff; color: #333; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
+        .slide-btn[draggable="true"] { cursor: grab; }
+        .slide-btn[draggable="true"]:active { cursor: grabbing; }
+        .slide-btn.active { background: var(--accent-green); color: #001a33; transform: scale(1.1); box-shadow: 0 0 15px rgba(118, 206, 63, 0.5);}
+        .slide-btn.drag-over { transform: scale(1.2); border: 2px dashed var(--accent-green); opacity: 0.8; }
+        .slide-btn.add { background: transparent; border: 2px dashed rgba(255,255,255,0.5); color: #fff;}
+        .slide-btn.add:hover { border-color: #fff; background: rgba(255,255,255,0.2);}
+        .slide-btn.del { width: 28px; height: 28px; background: #d9534f; color: white; font-size: 10px; margin-left: 5px;}
+        .slide-btn.aux-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 16px;}
+        .slide-btn.aux-btn:hover:not(:disabled) { background: rgba(255,255,255,0.4); }
+        .slide-btn.aux-btn:disabled { opacity: 0.3; cursor: not-allowed; border: none;}
+
+        .controls-pane { flex-shrink: 0; background: white; display: flex; flex-direction: column; z-index: 20; position: relative;}
+        .nav-bar { display: flex; background: var(--primary-bg); overflow-x: auto; z-index: 30; }
+        .nav-btn { flex: 1; padding: 12px 8px; min-width: 70px; border: none; background: none; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: 0.2s; }
+        .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; transition: 0.2s; }
+        .nav-btn:hover { color: rgba(255,255,255,0.9); }
+        .nav-btn.active { color: var(--primary-bg); background: #f9f9f9; border-top: 3px solid var(--accent-green); }
+
+        .panel-container { overflow-y: auto; background: #f9f9f9; height: 100%;}
+        .panel { display: none; padding: 20px; flex-direction: column; gap: 12px; }
+        .panel.active { display: flex; }
+
+        input[type="text"], input[type="number"], textarea, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; width: 100%; box-sizing: border-box; }
+        input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; transform: scale(1.1); }
+        .checkbox-label { font-size: 14px; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; width: fit-content; padding: 5px 0; }
+        input[type="color"] { -webkit-appearance: none; appearance: none; border: none; width: 100%; height: 40px; padding: 0; background: none; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid #ccc; border-radius: 6px; }
+
+        .label-pequena { font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #eee; width: 100%; }
+        
+        .input-sync { display: flex; align-items: center; gap: 10px; width: 100%;}
+        .input-sync input[type="range"] { flex: 1; margin: 0; cursor: pointer;}
+        .input-sync input[type="number"] { width: 65px; text-align: center; font-weight: bold; padding: 6px;}
+
+        .align-group { display: flex; gap: 5px; width: 100%;}
+        .align-btn { flex: 1; padding: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; font-size: 12px; text-align: center;}
+        .align-btn.active { background: var(--primary-bg); color: #fff; border-color: var(--primary-bg); }
+
+        .palette-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #eee; width: 100%; }
+        .palette-color { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; position:relative; }
+        .palette-color:hover { transform: scale(1.1); }
+        .palette-color.active { border-color: #333; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .palette-color[style*="background:#FFFFFF"] { border-color: #ccc; }
+        .palette-color.active[style*="background:#FFFFFF"] { border-color: #333; }
+
+        .btn-file { background: var(--file-blue); color: white; font-weight: bold; cursor: pointer; border: none; padding: 12px; border-radius: 8px; text-align: center; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-file:hover { background: var(--file-blue-hover); }
+
+        input[type="file"] { display: none; }
+        .custom-upload { display: flex; align-items: center; gap: 10px; border: 1px dashed #bbb; padding: 6px; border-radius: 6px; cursor: pointer; background: #fafafa; transition: 0.2s;}
+        .custom-upload:hover { border-color: var(--primary-bg); background: #f0f8ff; }
+        .btn-up-icon { background: var(--primary-bg); color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;}
+        .file-name-text { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;}
+        
+        .dir-btn { width: 36px; height: 36px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+        .dir-btn:hover { background: #f0f0f0; }
+        .dir-btn.active { background: var(--primary-bg); color: #fff; border-color: var(--primary-bg); box-shadow: inset 0 0 5px rgba(0,0,0,0.3);}
+        .clear-img-btn { background: #fff; border: 1px solid #ccc; border-radius: 6px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; font-size: 16px; transition: 0.2s;}
+        .clear-img-btn:hover { background: #ffe6e6; border-color: #d9534f; color: #d9534f; }
+
+        .pos-grid { display: grid; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); gap: 4px; justify-content: center;}
+        .pos-btn { background: #eee; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .pos-btn:hover { background: #ddd; }
+        .pos-btn.active { background: var(--primary-bg); border-color: var(--primary-bg); box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
+        .pos-empty { visibility: hidden; }
+
+        .tb-block { background: #fffcfc; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; position: relative; transition: 0.2s; }
+        .tb-block:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tb-block.dragging { opacity: 0.5; box-shadow: none; border: 2px dashed var(--file-blue); }
+        .tb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; }
+        .tb-drag-handle { cursor: grab; padding: 5px 10px 5px 0; font-size: 14px; color: #999; display: flex; align-items: center; gap: 5px;}
+        .tb-drag-handle:active { cursor: grabbing; color: var(--primary-bg); }
+        .tb-del { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 12px; padding: 5px; }
+        .tb-del:hover { background: #ffe6e6; border-radius: 4px;}
+
+        .global-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--accent-green); color: #001a33; padding: 12px 25px; border-radius: 30px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 10000; opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 8px; font-size: 15px;}
+        .global-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .loading { display: none; font-size: 12px; color: #d9534f; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; background: #fff3f3; border: 1px solid #f5c6c6; margin-top: 5px; }
+
+        .mockup-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px); }
+        .mockup-modal.active { display: flex; }
+        .ig-post { background: #fff; width: 360px; max-width: 95vw; border-radius: 8px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: none;}
+        .ig-header { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid #efefef; }
+        .ig-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; margin-right: 10px; display: flex; justify-content: center; align-items: center; color: #333; font-size: 12px; font-weight: bold;}
+        .ig-username { font-weight: 600; font-size: 13px; flex: 1; color: #262626;}
+        .ig-dots { font-weight: bold; color: #262626; letter-spacing: 2px; margin-bottom: 5px; cursor: pointer;}
+        .ig-carousel-container { position: relative; width: 100%; background: #000; overflow: hidden; transition: aspect-ratio 0.3s;}
+        .ig-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; height: 100%; scrollbar-width: none; -ms-overflow-style: none; cursor: grab;}
+        .ig-carousel:active { cursor: grabbing; }
+        .ig-carousel::-webkit-scrollbar { display: none; }
+        .ig-slide { flex: 0 0 100%; scroll-snap-align: start; width: 100%; height: 100%; object-fit: contain; pointer-events: none;}
+        .ig-footer { padding: 12px 14px; }
+        .ig-icons { display: flex; gap: 15px; margin-bottom: 10px; font-size: 22px; color: #262626;}
+        .ig-likes { font-weight: 600; font-size: 13px; margin-bottom: 6px; color: #262626;}
+        .ig-caption { font-size: 13px; color: #262626; line-height: 1.4;}
+        .close-mockup { margin-top: 20px; padding: 12px 25px; background: white; color: #333; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .close-mockup:hover { background: #ddd; }
+        .loading-mockup { color: white; font-weight: bold; font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #fff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- MOTOR MOBILE --- */
+        @media (max-width: 767px) {
+            .app-container { display: block; }
+            .preview-pane { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; padding: 60px 60px 90px 20px; z-index: 1; }
+            
+            /* Gaveta flutuante do fundo */
+            .controls-pane { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; max-height: 85vh; background: transparent; z-index: 20; display: flex; flex-direction: column-reverse; pointer-events: none; }
+            .nav-bar { pointer-events: auto; border-radius: 20px 20px 0 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); z-index: 30; }
+            
+            /* O painel de opções */
+            .panel-container { pointer-events: auto; background: #f9f9f9; border-radius: 20px 20px 0 0; display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); max-height: 65vh; padding-top: 10px; z-index: 25; flex-direction: column;}
+            .controls-pane.open .panel-container { display: flex; animation: slideUp 0.3s ease-out; }
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            
+            /* Alça (Drag Handle) */
+            .sheet-handle { display: block; width: 40px; height: 5px; background: #ccc; border-radius: 5px; margin: 0 auto 10px auto; flex-shrink: 0; }
+            
+            /* Carrossel Vertical */
+            .carousel-bar { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); flex-direction: column; background: rgba(0,0,0,0.6); padding: 10px 6px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; max-height: 60vh; overflow-y: auto;}
+            .slide-btn { width: 28px; height: 28px; font-size: 11px; }
+            .slide-btn.del { width: 24px; height: 24px; font-size: 9px; }
+            .project-title-badge { top: 15px; left: 15px; padding: 6px 12px; font-size: 10px; }
+            
+            .panel { padding: 10px 20px 20px 20px; flex: 1; overflow-y: auto; }
+        }
+        @media (min-width: 768px) {
+            .app-container { flex-direction: row-reverse; }
+            .preview-pane { flex: 1; padding: 30px; }
+            .controls-pane { width: 40%; min-width: 450px; height: 100vh; border-top: none; border-right: 1px solid #ddd; border-left: none; flex-direction: row; display: flex;}
+            .nav-bar { flex-direction: column; width: 85px; border-bottom: none; border-right: none; height: 100vh; overflow-y: hidden; align-items: flex-end; padding-top: 15px; gap: 5px;}
+            .nav-btn { width: 90%; padding: 14px 5px; border-radius: 12px 0 0 12px; border: none; justify-content: center; }
+            .nav-btn.active { background: #f9f9f9; border-top: none; }
+            .btn-preview-desk { margin-top: auto; margin-bottom: 15px; width: 80%; border-radius: 12px; background: rgba(118, 206, 63, 0.15) !important; color: var(--accent-green) !important; margin-right: 10%;}
+            .btn-preview-desk:hover { background: rgba(118, 206, 63, 0.3) !important; }
+            .panel-container { flex: 1; overflow-y: auto; height: 100vh;}
+            .sheet-handle { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="globalToast" class="global-toast">💾 Projeto Salvo!</div>
+
+<div id="mockupModal" class="mockup-modal">
+    <div id="mockupLoading" class="loading-mockup"><div class="spinner"></div>Gerando Preview...</div>
+    <div id="igPost" class="ig-post">
+        <div class="ig-header"><div class="ig-avatar"></div><div class="ig-username">seu.perfil</div><div class="ig-dots">...</div></div>
+        <div class="ig-carousel-container" id="igCarouselContainer"><div class="ig-carousel" id="igCarousel"></div></div>
+        <div class="ig-footer">
+            <div class="ig-icons">♡ 💬 ↗</div>
+            <div class="ig-likes">Curtido por 42 pessoas</div>
+            <div class="ig-caption"><span style="font-weight:600">seu.perfil</span> Deslize para o lado para ler a notícia completa. Acompanhe nossas ações oficiais! #Notícia</div>
+        </div>
+    </div>
+    <button class="close-mockup" id="closeMockupBtn" style="display:none;" onclick="closeMockup()">Fechar Preview</button>
+</div>
+
+<div class="app-container" id="app">
+    
+    <div class="preview-pane">
+        <div class="project-title-badge">
+            <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span id="pNameText">Sem_titulo</span>
+        </div>
+        <div class="canvas-wrapper"><canvas id="feedCanvas" width="1080" height="1440"></canvas></div>
+        <div class="carousel-bar" id="carouselBar"></div>
+    </div>
+
+    <div class="controls-pane">
+        <div class="nav-bar">
+            <button class="nav-btn" onclick="toggleTab('tab-layout', this)">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Layout
+            </button>
+            <button class="nav-btn" onclick="toggleTab('tab-project', this)">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Arquivo
+            </button>
+            <button class="nav-btn active" onclick="toggleTab('tab-media', this)">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Mídias
+            </button>
+            <button class="nav-btn" onclick="toggleTab('tab-text', this)">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Textos
+            </button>
+            <button class="nav-btn" onclick="toggleTab('tab-design', this)">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Estilos
+            </button>
+            <button class="nav-btn btn-preview-desk" onclick="openMockup()">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Preview
+            </button>
+        </div>
+
+        <!-- CONTEINER DOS PAINÉIS COM A ALÇA -->
+        <div class="panel-container" id="mobilePanelContainer">
+            <div class="sheet-handle" id="sheetHandle"></div>
+            
+            <div id="tab-layout" class="panel">
+                <span class="label-pequena">Formato da Arte</span>
+                <p style="font-size: 12px; color: #666; margin-top: 0;">Isso mudará o formato de todos os cards e ajustará os textos automaticamente.</p>
+                <div class="control-group">
+                    <select id="layoutFormat" onchange="applyGlobalFormat(this.value)" style="font-size: 14px; font-weight: bold; padding: 12px;">
+                        <option value="3:4">Post Feed Padrão (1080 x 1440)</option>
+                        <option value="9:16">Stories / Reels (1080 x 1920)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="tab-project" class="panel">
+                <div class="control-group" style="border-left: 3px solid #d9534f; background: #fffcfc;">
+                    <span class="label-pequena" style="color: #d9534f;">⚡ Auto-Gerar (Extrair Matéria)</span>
+                    <input type="text" id="newsLink" placeholder="Cole o link da matéria aqui...">
+                    <button class="btn-file" id="btnFetch" style="background: #d9534f; margin-top: 5px;" onclick="fetchMetadata()">⬇️ Puxar Dados do Site</button>
+                    <div id="loadingText" class="loading">Buscando dados... aguarde.</div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+
+                <span class="label-pequena">Salvar / Carregar Projeto Editável</span>
+                <p style="font-size: 12px; color: #666; margin-top: 0;"><strong>Atalhos:</strong> <code>Ctrl+S</code> para salvar. <code>Ctrl+Z</code> para desfazer.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-file" style="flex: 1;" onclick="saveProject()">💾 Salvar (.json)</button>
+                    <button class="btn-file" style="flex: 1; background: #666;" onclick="loadProjectModern()">📂 Abrir (.json)</button>
+                    <input type="file" id="projectLoad" accept=".json" style="display:none" onchange="loadProjectFallback(event)">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                
+                <span class="label-pequena">Exportação de Imagens Finais</span>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-file" onclick="downloadCurrent()">🖼️ Baixar Slide Atual</button>
+                    <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()">📚 Baixar Todos (Carrossel)</button>
+                    <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()">📦 Exportar Pacote Completo (ZIP)</button>
+                </div>
+            </div>
+
+            <div id="tab-media" class="panel active">
+                
+                <div class="control-group" style="border-left: 3px solid #005b9f;">
+                    <span class="label-pequena" style="color: #005b9f;">Pexels (Busca Grátis)</span>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="pexelsSearch" placeholder="Ex: Negócios, Brasilia..." style="flex:1;">
+                        <button type="button" class="btn-file" onclick="searchPexels()" style="padding: 8px 12px;">🔍</button>
+                        <button type="button" class="btn-file" id="btnPexelsClear" onclick="clearPexels()" style="padding: 8px 12px; background: #666; display: none;">✖</button>
+                    </div>
+                    <div id="pexelsResults" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 5px; padding-bottom: 5px; min-height: 0px; scrollbar-width: thin;"></div>
+                </div>
+
+                <div class="control-group" style="border-left: 3px solid var(--accent-green);">
+                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                        <span class="label-pequena">Foto Principal (Manual)</span>
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="solidBgToggle" onchange="generatePreview()"> Ocultar</label>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <label class="custom-upload" style="flex:1;">
+                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="file-name-text" id="fn_bg">Nenhuma imagem</span>
+                            <input type="file" id="imgLoad" accept="image/*">
+                        </label>
+                        <button class="clear-img-btn" onclick="clearImg('bg')" title="Remover Foto">🗑️</button>
+                    </div>
+                    
+                    <span class="label-pequena" style="margin-top: 5px;">Enquadramento (Arraste no preview)</span>
+                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
+                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
+                    <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO Y:</span><input type="range" id="posY" min="-1000" max="1000" value="0" oninput="sync(this, 'numY')"><input type="number" id="numY" value="0" oninput="sync(this, 'posY')"></div>
+                    
+                    <div style="display: flex; gap: 15px; margin-top:5px;">
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipXToggle" onchange="generatePreview()"> Espelhar ↔</label>
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipYToggle" onchange="generatePreview()"> Espelhar ↕</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <span class="label-pequena">Textura de Fundo / Watermark Global</span>
+                    <div style="display: flex; gap: 5px;">
+                        <label class="custom-upload" style="flex:1;">
+                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="file-name-text" id="fn_tpl">Nenhuma imagem</span>
+                            <input type="file" id="bgTemplateLoad" accept="image/*">
+                        </label>
+                        <button class="clear-img-btn" onclick="clearImg('tpl')" title="Remover Textura">🗑️</button>
+                    </div>
+                </div>
+
+                <div class="control-group" style="border-left: 3px solid #005b9f;">
+                    <span class="label-pequena" style="color: #005b9f;">Logo Institucional Livre</span>
+                    <div style="display: flex; gap: 5px;">
+                        <label class="custom-upload" style="flex:1;">
+                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="file-name-text" id="fn_user_logo">Nenhuma logo</span>
+                            <input type="file" id="userLogoLoad" accept="image/png, image/jpeg">
+                        </label>
+                        <button class="clear-img-btn" onclick="clearImg('user_logo')" title="Remover Logo">🗑️</button>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                        <div class="pos-grid">
+                            <button class="pos-btn active" id="pos_TL" onclick="setLogoPos('TL')" title="Topo Esquerda"></button>
+                            <button class="pos-btn" id="pos_TC" onclick="setLogoPos('TC')" title="Topo Centro"></button>
+                            <button class="pos-btn" id="pos_TR" onclick="setLogoPos('TR')" title="Topo Direita"></button>
+                            <div class="pos-empty"></div>
+                            <button class="pos-btn" id="pos_C" onclick="setLogoPos('C')" title="Centro (Marca d'água)"></button>
+                            <div class="pos-empty"></div>
+                            <button class="pos-btn" id="pos_BL" onclick="setLogoPos('BL')" title="Base Esquerda"></button>
+                            <button class="pos-btn" id="pos_BC" onclick="setLogoPos('BC')" title="Base Centro"></button>
+                            <button class="pos-btn" id="pos_BR" onclick="setLogoPos('BR')" title="Base Direita"></button>
+                        </div>
+                        <input type="hidden" id="logoPos" value="TL">
+                        
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">TAM:</span><input type="range" id="logoSize" min="10" max="300" value="100" oninput="sync(this, 'numLogoSize')"><input type="number" id="numLogoSize" value="100" oninput="sync(this, 'logoSize')"></div>
+                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS Y:</span><input type="range" id="logoPosY" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosY')"><input type="number" id="numLogoPosY" value="0" oninput="sync(this, 'logoPosY')"></div>
+                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS X:</span><input type="range" id="logoPosX" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosX')"><input type="number" id="numLogoPosX" value="0" oninput="sync(this, 'logoPosX')"></div>
+                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">OPAC:</span><input type="range" id="logoOpacity" min="0" max="100" value="100" oninput="sync(this, 'numLogoOpacity')"><input type="number" id="numLogoOpacity" value="100" oninput="sync(this, 'logoOpacity')"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group" style="border-left: 3px solid #f0b900;">
+                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                        <span class="label-pequena" style="color: #f0b900;">Rodapé Parceiros Externos</span>
+                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="useCustomFooterToggle" onchange="generatePreview()"> Ativar</label>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <label class="custom-upload" style="flex:1;">
+                            <span class="btn-up-icon">📤 Upload</span>
+                            <span class="file-name-text" id="fn_foot">Nenhuma imagem</span>
+                            <input type="file" id="customFooterLoad" accept="image/png, image/jpeg">
+                        </label>
+                        <button class="clear-img-btn" onclick="clearImg('foot')" title="Remover Rodapé">🗑️</button>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <select id="customFooterBehavior" onchange="generatePreview()" style="font-size: 11px;">
+                            <option value="all">Em todos os cards</option>
+                            <option value="cover">Apenas na Capa (Slide 1)</option>
+                            <option value="cover_last">Na Capa e no Último Card</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-text" class="panel">
+                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="quoteToggle" onchange="generatePreview()"> Modo Citação (Aspas Inteligentes)</label></div>
+                
+                <div class="control-group">
+                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                        <span class="label-pequena">Tipografia Principal</span>
+                        <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="useWebFonts" onchange="toggleWebFonts()"> 🌐 Google Fonts</label>
+                    </div>
+                    <select id="fontFamily" onchange="onFontChange()"></select>
+                </div>
+
+                <div class="control-group">
+                    <span class="label-pequena">Alinhamento Global</span>
+                    <div class="align-group">
+                        <button type="button" id="alignLeft" class="align-btn active" onclick="setAlign('left', this)">Esquerda</button>
+                        <button type="button" id="alignCenter" class="align-btn" onclick="setAlign('center', this)">Centro</button>
+                        <button type="button" id="alignRight" class="align-btn" onclick="setAlign('right', this)">Direita</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <span class="label-pequena">Posição Vertical do Conjunto (Sobe/Desce)</span>
+                    <div class="input-sync"><input type="range" id="tPosY" min="100" max="1800" value="850" oninput="sync(this, 'numTPosY')"><input type="number" id="numTPosY" value="850" oninput="sync(this, 'tPosY')"></div>
+                </div>
+
+                <div class="control-group">
+                    <span class="label-pequena" style="color:var(--accent-green)">Margem Lateral (Eixo X)</span>
+                    <div class="input-sync">
+                        <input type="range" id="tPosX" min="20" max="300" value="70" oninput="sync(this, 'numTPosX')">
+                        <input type="number" id="numTPosX" value="70" oninput="sync(this, 'tPosX')">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label class="checkbox-label" style="color: #d9534f; font-size: 12px;"><input type="checkbox" id="customTextColorToggle" onchange="toggleCustomColors(); generatePreview()"> ⚠️ Alterar cores do texto (Avançado)</label>
+                    <div id="customTextColorBox" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <div><span class="label-pequena">Cor do Título</span><input type="color" id="cTitle" value="#ffffff" onchange="generatePreview()"></div>
+                        <div><span class="label-pequena">Cor do Corpo</span><input type="color" id="cDesc" value="#cccccc" onchange="generatePreview()"></div>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                <span class="label-pequena" style="color: #005b9f;">Blocos de Texto (Arraste para Reordenar)</span>
+                <p style="font-size: 11px; color: #666; margin: 0 0 5px 0;">
+                    <b>Dica Markdown:</b> Use <code>*marca-texto*</code>, <code>**negrito**</code>, <code>_itálico_</code>, <code>__sublinhado__</code>, <code>~tachado~</code>, ou <code>^sobrescrito^</code>.
+                </p>
+
+                <div id="textBlocksContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 50px;"></div>
+
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">➕ Título</button>
+                    <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">➕ Corpo</button>
+                    <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">➕ Lista</button>
+                </div>
+            </div>
+
+            <div id="tab-design" class="panel">
+
+                <div class="control-group">
+                    <span class="label-pequena">Máscara Colorida / Degradê</span>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
+                        <div><span class="label-pequena" style="font-size:10px">Cor da Máscara</span><input type="color" id="gradColor" value="#001a33" onchange="generatePreview()"></div>
+                        <div>
+                            <span class="label-pequena" style="font-size:10px; text-align:center;">Direção</span>
+                            <div style="display:flex; gap:3px;">
+                                <button type="button" class="dir-btn active" id="dir_bottom-up" onclick="setGradDir('bottom-up')">↑</button>
+                                <button type="button" class="dir-btn" id="dir_top-down" onclick="setGradDir('top-down')">↓</button>
+                                <button type="button" class="dir-btn" id="dir_right-left" onclick="setGradDir('right-left')">←</button>
+                                <button type="button" class="dir-btn" id="dir_left-right" onclick="setGradDir('left-right')">→</button>
+                            </div>
+                            <input type="hidden" id="gradDir" value="bottom-up">
+                        </div>
+                    </div>
+                    <div class="input-sync" style="margin-top: 10px;"><span style="font-size:10px; font-weight:bold; width: 60px;">OPAC:</span><input type="range" id="gradOpac" min="0" max="100" value="100" oninput="sync(this, 'numGradOpac')"><input type="number" id="numGradOpac" value="100" oninput="sync(this, 'gradOpac')"></div>
+                    <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SÓLIDO:</span><input type="range" id="gradSolid" min="0" max="100" value="40" oninput="sync(this, 'numGradSolid')"><input type="number" id="numGradSolid" value="40" oninput="sync(this, 'gradSolid')"></div>
+                    <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SUAVE:</span><input type="range" id="gradFade" min="0" max="100" value="40" oninput="sync(this, 'numGradFade')"><input type="number" id="numGradFade" value="40" oninput="sync(this, 'gradFade')"></div>
+                </div>
+
+                <div class="control-group" style="border-left: 3px solid #6a0dad;">
+                    <span class="label-pequena" style="color: #6a0dad;">Filtros de Imagem</span>
+                    <select id="imgEffect" onchange="toggleEffectControls(); generatePreview()" style="font-size:12px; padding:6px;">
+                        <option value="none">Nenhum</option>
+                        <option value="blur">Desfoque Cinematográfico (Blur)</option>
+                        <option value="grain">Ruído Analógico (Film Grain)</option>
+                        <option value="halftone">Retícula Offset (Jornal)</option>
+                        <option value="duotone">Duotone Institucional</option>
+                    </select>
+                    
+                    <div id="effectControls" style="display:none; margin-top:5px;">
+                        <div class="input-sync" id="effectIntensityWrapper"><span style="font-size:10px; font-weight:bold; width: 60px;">FORÇA:</span><input type="range" id="effectIntensity" min="0" max="100" value="50" oninput="sync(this, 'numEffectIntensity')"><input type="number" id="numEffectIntensity" value="50" oninput="sync(this, 'effectIntensity')"></div>
+                        <div id="duotoneColors" style="display:none; flex-direction: column; gap:10px; margin-top:10px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                <div><span class="label-pequena" style="font-size:9px">Sombra</span><input type="color" id="duotoneDark" value="#001a33" onchange="generatePreview()"></div>
+                                <div><span class="label-pequena" style="font-size:9px">Luz</span><input type="color" id="duotoneLight" value="#76ce3f" onchange="generatePreview()"></div>
+                            </div>
+                            <div class="input-sync">
+                                <span style="font-size:10px; font-weight:bold; width: 60px;">CONTRASTE:</span>
+                                <input type="range" id="duotoneContrast" min="100" max="500" value="150" oninput="sync(this, 'numDuotoneContrast')">
+                                <input type="number" id="numDuotoneContrast" value="150" oninput="sync(this, 'duotoneContrast')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group" style="border-left: 3px solid var(--accent-green);">
+                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                        <span class="label-pequena" style="color: var(--accent-green);">Moldura / Tema do Projeto</span>
+                        <select id="frameStyle" onchange="applyGlobalFooter()" style="font-size:12px; padding:4px; max-width: 150px;">
+                            <option value="curve_right">Clássico (Curva Direita)</option>
+                            <option value="curve_left">Clássico (Curva Esquerda)</option>
+                            <option value="line">Mínimo (Linha Reta)</option>
+                            <option value="editorial">Editorial (Dupla Linha)</option>
+                            <option value="terminal">Terminal (Visor)</option>
+                            <option value="polaroid">Polaroid (Foto Flutuante)</option>
+                            <option value="none">Sem Moldura</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <select id="footerIcon" onchange="applyGlobalFooter()" style="width: 60px; padding: 8px;">
+                            <option value="🔗">🔗</option>
+                            <option value="🌐">🌐</option>
+                            <option value="📍">📍</option>
+                            <option value="👤">👤</option>
+                            <option value="@">@</option>
+                            <option value="📱">📱</option>
+                            <option value="👉">👉</option>
+                            <option value="">-</option>
+                        </select>
+                        <input type="text" id="footerText" value="seusite.com.br" oninput="applyGlobalFooter()" placeholder="Texto da base..." style="flex: 1;">
+                        <input type="date" id="footerDate" onchange="applyGlobalFooter()" title="Data Polaroid" style="width: 110px; padding: 8px; font-size: 11px; border-radius: 6px; border: 1px solid #ccc;">
+                    </div>
+                </div>
+
+                <div class="control-group" style="border-left: 3px solid #d9534f;">
+                    <span class="label-pequena" style="color: #d9534f;">Cobertura Especial</span>
+                    <label class="checkbox-label" style="font-size:12px; font-weight: bold;">
+                        <input type="checkbox" id="liveToggle" onchange="generatePreview()"> 🔴 Ativar selo "Ao Vivo"
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <div style="display:flex; justify-content: space-between; align-items: center;">
+                        <label class="checkbox-label"><input type="checkbox" id="tagToggle" checked onchange="generatePreview()"> Exibir Tag (Tarja)</label>
+                        <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="tagBleedToggle" onchange="generatePreview()"> Sangrar Tag</label>
+                    </div>
+                    <input type="text" id="mTag" value="DESTAQUE" placeholder="Texto da Tag..." oninput="generatePreview()">
+                </div>
+                
+                <span class="label-pequena">Paleta Principal Institucional</span>
+                <div id="quickPalette" class="palette-container">
+                    <div class="palette-color active" style="background:#76ce3f" onclick="setQuickColor(this, '#76ce3f')"></div>
+                    <div class="palette-color" style="background:#6a0dad" onclick="setQuickColor(this, '#6a0dad')"></div>
+                    <div class="palette-color" style="background:#d9534f" onclick="setQuickColor(this, '#d9534f')"></div>
+                    <div class="palette-color" style="background:#f39c12" onclick="setQuickColor(this, '#f39c12')"></div>
+                    <div class="palette-color" style="background:#003366" onclick="setQuickColor(this, '#003366')"></div>
+                    <div class="palette-color" style="background:#000000" onclick="setQuickColor(this, '#000000')"></div>
+                    <div class="palette-color" style="background:#FFFFFF" onclick="setQuickColor(this, '#FFFFFF')"></div>
+                </div>
+
+                <span class="label-pequena" style="margin-top:10px;">Paleta Acessibilidade (Alto Contraste UI)</span>
+                <div id="accessPalette" class="palette-container">
+                    <div class="palette-color" style="background:#005b9f" title="Azul ONU" onclick="setQuickColor(this, '#005b9f')"></div>
+                    <div class="palette-color" style="background:#ffcc00" title="Amarelo Alto Contraste" onclick="setQuickColor(this, '#ffcc00')"></div>
+                    <div class="palette-color" style="background:#00722A" title="Verde Escuro" onclick="setQuickColor(this, '#00722A')"></div>
+                    <div class="palette-color" style="background:#C50000" title="Vermelho Escuro" onclick="setQuickColor(this, '#C50000')"></div>
+                    <div class="palette-color" style="background:#5c007a" title="Roxo Contraste" onclick="setQuickColor(this, '#5c007a')"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div><span class="label-pequena">Cor Linha/Tarja</span><input type="color" id="cTag" value="#76ce3f" onchange="applyGlobalColor(this.value)"></div>
+                    <div><span class="label-pequena">Cor Texto Tag</span><input type="color" id="cTagText" value="#ffffff" onchange="generatePreview()"></div>
+                    <div style="grid-column: span 2;"><span class="label-pequena">Cor Fundo Sólido Base</span><input type="color" id="cBg" value="#001a33" onchange="generatePreview()"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('feedCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let bgImage = new Image(); bgImage.crossOrigin = "anonymous";
+    let bgTemplateImg = new Image(); bgTemplateImg.crossOrigin = "anonymous";
+    let customFooterImg = new Image(); customFooterImg.crossOrigin = "anonymous";
+    let userLogoImg = new Image(); userLogoImg.crossOrigin = "anonymous"; 
+    
+    // API KEY DO PEXELS AQUI
+    const PEXELS_API_KEY = 'COLE_SUA_API_KEY_AQUI';
+
+    let currentTextBlocks = [];
+    
+    // Geradores de Pattern (Retícula e Ruído)
+    let noisePattern = null;
+    let halftonePattern = null;
+
+    function generatePatterns() {
+        try {
+            let nCv = document.createElement('canvas'); nCv.width = 100; nCv.height = 100;
+            let nCtx = nCv.getContext('2d'); let imgD = nCtx.createImageData(100,100);
+            for(let i=0; i<imgD.data.length; i+=4) {
+                let v = Math.random()*255;
+                imgD.data[i] = v; imgD.data[i+1] = v; imgD.data[i+2] = v; imgD.data[i+3] = 40;
+            }
+            nCtx.putImageData(imgD,0,0); noisePattern = ctx.createPattern(nCv, 'repeat');
+
+            let hCv = document.createElement('canvas'); hCv.width = 8; hCv.height = 8;
+            let hCtx = hCv.getContext('2d'); hCtx.fillStyle = '#000'; hCtx.beginPath();
+            hCtx.arc(4,4,2.5,0,Math.PI*2); hCtx.fill();
+            halftonePattern = ctx.createPattern(hCv, 'repeat');
+        } catch(e) { console.log("Erro ao gerar padrões", e); }
+    }
+
+    let appStarted = false;
+    function initApp() {
+        if(appStarted) return;
+        appStarted = true;
+        
+        generatePatterns();
+        toggleWebFonts(); 
+        
+        currentTextBlocks = [
+            { id: Date.now(), type: 'title', text: 'Sua manchete ou citação principal entra aqui.', size: 70 },
+            { id: Date.now()+1, type: 'body', text: 'Seu subtítulo ou corpo da notícia. Para testar, use **negrito**, _itálico_, ~tachado~, __sublinhado__, 10^o^ lugar e o *marca-texto*.', size: 38 }
+        ];
+
+        slides = [getFormState()];
+        forceSaveHistory(); 
+        renderCarouselBar();
+        renderTextBlocksUI();
+        initDragAndDrop();
+        generatePreview();
+    }
+    setTimeout(initApp, 100); 
+
+    function renderTextBlocksUI() {
+        const container = document.getElementById('textBlocksContainer');
+        container.innerHTML = '';
+        currentTextBlocks.forEach((b, i) => {
+            let div = document.createElement('div');
+            div.className = 'tb-block';
+            div.dataset.index = i;
+            
+            let colorBorder = b.type === 'title' ? '#005b9f' : (b.type === 'list' ? '#f0b900' : '#76ce3f');
+            div.style.borderLeft = `4px solid ${colorBorder}`;
+            
+            let typeName = b.type === 'title' ? 'Título' : (b.type === 'list' ? 'Lista' : 'Corpo de Texto');
+            
+            let html = `
+                <div class="tb-header">
+                    <div class="tb-drag-handle" title="Arraste para reordenar">☰ ${typeName}</div>
+                    <button type="button" class="tb-del" title="Excluir Bloco" onclick="deleteTextBlock(${i})">🗑️</button>
+                </div>
+            `;
+
+            if(b.type === 'list') {
+                html += `
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <select onchange="updateTextBlock(${i}, 'listType', this.value)" style="font-size:11px; padding:4px; flex:1;">
+                        <option value="bullets" ${b.listType==='bullets'?'selected':''}>Marcadores ( • )</option>
+                        <option value="numbers" ${b.listType==='numbers'?'selected':''}>Numerada (1, 2...)</option>
+                        <option value="letters" ${b.listType==='letters'?'selected':''}>Alfabética (A, B...)</option>
+                    </select>
+                    <label class="checkbox-label" style="font-size:11px; margin:0;">
+                        <input type="checkbox" onchange="updateTextBlock(${i}, 'listColorToggle', this.checked)" ${b.listColorToggle?'checked':''}> Cor do tema
+                    </label>
+                </div>`;
+            }
+
+            html += `
+                <textarea rows="${b.type==='title'?2:3}" oninput="updateTextBlock(${i}, 'text', this.value)" placeholder="Digite aqui...">${b.text}</textarea>
+                <div class="input-sync" style="margin-top:5px;">
+                    <span style="font-size:9px; font-weight:bold; width: 30px;">TAM:</span>
+                    <input type="range" min="15" max="150" value="${b.size}" oninput="updateTextBlock(${i}, 'size', this.value); this.nextElementSibling.value=this.value">
+                    <input type="number" value="${b.size}" oninput="updateTextBlock(${i}, 'size', this.value); this.previousElementSibling.value=this.value">
+                </div>
+            `;
+            div.innerHTML = html;
+            container.appendChild(div);
+        });
+    }
+
+    function addTextBlock(type) {
+        forceSaveHistory(); 
+        let newBlock = {
+            id: Date.now(), type: type,
+            text: type === 'title' ? 'Novo Título' : (type === 'list' ? 'Item 1\nItem 2\nItem 3' : 'Novo parágrafo de texto...'),
+            size: type === 'title' ? 70 : 38
+        };
+        if(type === 'list') { newBlock.listType = 'bullets'; newBlock.listColorToggle = true; }
+        currentTextBlocks.push(newBlock);
+        renderTextBlocksUI(); updateCurrentSlideState(); generatePreview();
+    }
+
+    function deleteTextBlock(index) {
+        forceSaveHistory(); 
+        currentTextBlocks.splice(index, 1);
+        renderTextBlocksUI(); updateCurrentSlideState(); generatePreview();
+    }
+
+    function updateTextBlock(index, field, value) {
+        currentTextBlocks[index][field] = value;
+        updateCurrentSlideState(); generatePreview();
+    }
+
+    function initDragAndDrop() {
+        const container = document.getElementById('textBlocksContainer');
+        let activeTouchBlock = null;
+
+        // Desktop
+        container.addEventListener('dragstart', e => {
+            if (e.target.classList.contains('tb-block')) {
+                e.dataTransfer.effectAllowed = 'move';
+                setTimeout(() => e.target.classList.add('dragging'), 0);
+            }
+        });
+        container.addEventListener('dragover', e => {
+            e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+            const afterElement = getDragAfterElement(container, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if(draggable) {
+                if (afterElement == null) container.appendChild(draggable);
+                else container.insertBefore(draggable, afterElement);
+            }
+        });
+        container.addEventListener('dragend', e => {
+            if (e.target.classList.contains('tb-block')) {
+                e.target.classList.remove('dragging'); e.target.removeAttribute('draggable'); 
+                salvarOrdemTextos(container); 
+            }
+        });
+
+        // Mobile Touch
+        container.addEventListener('touchstart', e => {
+            let handle = e.target.closest('.tb-drag-handle');
+            if (handle) {
+                activeTouchBlock = handle.closest('.tb-block');
+                activeTouchBlock.classList.add('dragging');
+            }
+        }, {passive: true});
+        container.addEventListener('touchmove', e => {
+            if (!activeTouchBlock) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const afterElement = getDragAfterElement(container, touch.clientY);
+            if (afterElement == null) container.appendChild(activeTouchBlock);
+            else container.insertBefore(activeTouchBlock, afterElement);
+        }, {passive: false});
+        container.addEventListener('touchend', e => {
+            if (activeTouchBlock) {
+                activeTouchBlock.classList.remove('dragging');
+                activeTouchBlock = null;
+                salvarOrdemTextos(container);
+            }
+        });
+        // Ativa o draggable via mouse no handle
+        container.addEventListener('mousedown', e => {
+            let handle = e.target.closest('.tb-drag-handle');
+            if (handle) handle.closest('.tb-block').setAttribute('draggable', true);
+        });
+        container.addEventListener('mouseup', e => {
+            let handle = e.target.closest('.tb-drag-handle');
+            if (handle) handle.closest('.tb-block').removeAttribute('draggable');
+        });
+    }
+
+    function salvarOrdemTextos(container) {
+        forceSaveHistory(); 
+        const newBlocks = [];
+        [...container.querySelectorAll('.tb-block')].forEach(block => {
+            let oldIndex = parseInt(block.dataset.index);
+            newBlocks.push(currentTextBlocks[oldIndex]);
+        });
+        currentTextBlocks = newBlocks;
+        renderTextBlocksUI(); updateCurrentSlideState(); generatePreview();
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.tb-block:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } else { return closest; }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // --- PEXELS API COM PAGINAÇÃO ---
+    let pexelsPage = 1;
+    let pexelsQuery = '';
+
+    async function searchPexels(isLoadMore = false) {
+        if(!isLoadMore) {
+            pexelsQuery = document.getElementById('pexelsSearch').value; pexelsPage = 1;
+            if(!pexelsQuery) return;
+        } else { pexelsPage++; }
+        
+        if(PEXELS_API_KEY === 'COLE_SUA_API_KEY_AQUI') return alert("⚠️ ATENÇÃO: Cole sua API Key no código.");
+        
+        const resDiv = document.getElementById('pexelsResults');
+        document.getElementById('btnPexelsClear').style.display = 'block';
+        
+        let loadingMsg = document.createElement('span'); loadingMsg.id = 'pxLoadMsg'; loadingMsg.style = 'font-size:11px; color:#666; padding: 10px; flex-shrink:0;'; loadingMsg.innerText = 'Buscando... ⏳';
+        
+        if(document.getElementById('btnLoadMorePx')) document.getElementById('btnLoadMorePx').remove();
+        if(!isLoadMore) resDiv.innerHTML = '';
+        resDiv.appendChild(loadingMsg);
+        
+        try {
+            let response = await fetch(`https://api.pexels.com/v1/search?query=${pexelsQuery}&per_page=15&page=${pexelsPage}`, { headers: { Authorization: PEXELS_API_KEY } });
+            let data = await response.json();
+            
+            if(document.getElementById('pxLoadMsg')) document.getElementById('pxLoadMsg').remove();
+            if(data.photos.length === 0 && !isLoadMore) { resDiv.innerHTML = '<span style="font-size:11px; color:#d9534f;">Nenhuma foto encontrada.</span>'; return; }
+            
+            data.photos.forEach(p => {
+                let img = document.createElement('img'); img.src = p.src.tiny;
+                img.style = 'height:100px; border-radius:6px; cursor:pointer; border: 2px solid transparent; transition: 0.2s; flex-shrink: 0;';
+                img.onmouseover = () => img.style.borderColor = '#005b9f'; img.onmouseout = () => img.style.borderColor = 'transparent';
+                img.onclick = () => {
+                    triggerGlobalToast("⏳ Baixando alta resolução..."); img.style.opacity = '0.5';
+                    loadPexelsImage(p.src.large2x).then(() => img.style.opacity = '1');
+                };
+                resDiv.appendChild(img);
+            });
+            
+            if (data.next_page) {
+                let btnMore = document.createElement('button'); btnMore.id = 'btnLoadMorePx'; btnMore.className = 'btn-file';
+                btnMore.style = 'padding: 8px 12px; font-size: 11px; flex-shrink: 0; background: #6a0dad;';
+                btnMore.innerText = '➕ Mais'; btnMore.onclick = () => searchPexels(true);
+                resDiv.appendChild(btnMore);
+            }
+        } catch(e) { 
+            if(document.getElementById('pxLoadMsg')) document.getElementById('pxLoadMsg').remove();
+            let err = document.createElement('span'); err.style = 'font-size:11px; color:#d9534f;'; err.innerText = 'Erro na busca.'; resDiv.appendChild(err);
+        }
+    }
+
+    function clearPexels() {
+        document.getElementById('pexelsSearch').value = ''; document.getElementById('pexelsResults').innerHTML = ''; document.getElementById('btnPexelsClear').style.display = 'none';
+    }
+
+    async function loadPexelsImage(url) {
+        document.getElementById('fn_bg').innerText = "Processando...";
+        try {
+            let proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url); let response = await fetch(proxyUrl);
+            let blob = await response.blob(); let file = new File([blob], "pexels.jpg", {type: blob.type});
+            let b64 = await resizeAndCompressImage(file);
+            await new Promise(resolve => { bgImage.onload = resolve; bgImage.onerror = resolve; bgImage.src = b64; if(bgImage.complete) resolve(); });
+            document.getElementById('fn_bg').innerText = "Foto do Pexels"; triggerGlobalToast("✅ Imagem Aplicada!");
+            forceSaveHistory(); updateCurrentSlideState(); generatePreview();
+        } catch(e) { triggerGlobalToast("❌ Falha na conexão"); }
+    }
+
+    // --- AUTO-GERADOR DE MATÉRIA ---
+    async function fetchMetadata() {
+        const url = document.getElementById('newsLink').value; const btn = document.getElementById('btnFetch'); const loading = document.getElementById('loadingText');
+        if(!url) return alert("Por favor, cole um link da matéria.");
+        
+        btn.innerText = "Buscando..."; loading.style.display = 'block'; loading.style.color = '#333'; loading.style.background = '#e6f2ff'; loading.style.borderColor = '#b3d7ff'; loading.innerText = 'Lendo o site... aguarde alguns segundos.';
+
+        const proxies = ["https://api.allorigins.win/get?url=", "https://api.codetabs.com/v1/proxy?quest="]; let htmlText = null;
+        for (let proxy of proxies) {
+            try {
+                const response = await fetch(proxy + encodeURIComponent(url)); if (!response.ok) continue;
+                htmlText = proxy.includes('allorigins') ? (await response.json()).contents : await response.text(); if (htmlText) break;
+            } catch (e) { }
+        }
+
+        btn.innerHTML = "⬇️ Puxar Dados do Site";
+        if (!htmlText) { loading.style.display = 'none'; alert("O firewall do site bloqueou o acesso.\nInsira os dados manualmente na aba Textos."); return; }
+
+        try {
+            const parser = new DOMParser(); const doc = parser.parseFromString(htmlText, "text/html");
+            let titleRaw = doc.querySelector('meta[property="og:title"]')?.content || doc.title || "";
+            let finalTitle = titleRaw.split('|')[0].trim();
+            let finalDesc = doc.querySelector('meta[property="og:description"]')?.content || doc.querySelector('meta[name="description"]')?.content || "";
+
+            forceSaveHistory();
+            currentTextBlocks = [ { id: Date.now(), type: 'title', text: finalTitle, size: 70 }, { id: Date.now()+1, type: 'body', text: finalDesc, size: 38 } ];
+            renderTextBlocksUI();
+
+            let image = doc.querySelector('meta[property="og:image"]')?.content;
+            if (!image) {
+                let featImg = doc.querySelector('figure.mptcu-featured-image img') || doc.querySelector('img.wp-post-image');
+                if (featImg) { image = featImg.getAttribute('src'); if(image && image.startsWith('data:')) image = featImg.getAttribute('data-src') || featImg.getAttribute('srcset')?.split(' ')[0] || image; }
+            }
+
+            if(image && image.startsWith('/')) { const urlObj = new URL(url); image = urlObj.origin + image; }
+
+            if(image && !image.startsWith('data:')) {
+                fetch("https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(image))
+                    .then(res => { if(!res.ok) throw new Error("Erro no proxy"); return res.blob(); })
+                    .then(async blob => {
+                        let file = new File([blob], "captura.jpg", {type: blob.type}); document.getElementById('fn_bg').innerText = "Imagem do Site";
+                        let b64 = await resizeAndCompressImage(file);
+                        await new Promise(resolve => { bgImage.onload = resolve; bgImage.onerror = resolve; bgImage.src = b64; if(bgImage.complete) resolve(); });
+                        loading.style.display = 'none'; updateCurrentSlideState(); generatePreview(); triggerGlobalToast("✅ Matéria Importada!");
+                    }).catch(err => { loading.style.display = 'none'; updateCurrentSlideState(); generatePreview(); triggerGlobalToast("✅ Textos Importados"); });
+            } else { loading.style.display = 'none'; updateCurrentSlideState(); generatePreview(); triggerGlobalToast("✅ Textos Importados"); }
+        } catch (e) { loading.style.display = 'none'; alert("Erro interno ao processar a página."); }
+    }
+
+    const sysFonts = ['Arial', 'Segoe UI', 'Georgia', 'Verdana'];
+    const webFonts = [
+        'Urbanist', 'Outfit', 'Plus Jakarta Sans', 'Inter', 'DM Sans', 'Public Sans',
+        'Poppins', 'Montserrat', 'Roboto', 'League Spartan', 'Playfair Display',
+        'Oswald', 'Lato', 'Merriweather', 'Open Sans', 'Raleway', 'Ubuntu', 'Bebas Neue', 'Caveat'
+    ];
+    
+    function toggleWebFonts() {
+        const useWeb = document.getElementById('useWebFonts').checked; const sel = document.getElementById('fontFamily'); const currentVal = sel.value; sel.innerHTML = '';
+        let list = useWeb ? webFonts : sysFonts;
+        list.forEach(f => { let opt = document.createElement('option'); opt.value = f; opt.innerText = f; sel.appendChild(opt); });
+        if(list.includes(currentVal)) sel.value = currentVal; else sel.value = list[0]; 
+        if(useWeb) onFontChange(); else { updateCurrentSlideState(); generatePreview(); }
+    }
+
+    async function onFontChange() {
+        generatePreview(); const font = document.getElementById('fontFamily').value;
+        if (document.getElementById('useWebFonts').checked) {
+            let div = document.createElement('div'); div.style.fontFamily = `"${font}"`; div.style.fontWeight = 'bold'; div.innerHTML = 'A'; div.style.position = 'absolute'; div.style.left = '-9999px'; document.body.appendChild(div);
+            try { await document.fonts.load(`16px "${font}"`); await document.fonts.load(`bold 16px "${font}"`); setTimeout(() => { updateCurrentSlideState(); generatePreview(); document.body.removeChild(div); }, 50); } catch(e) { document.body.removeChild(div); }
+        } else { updateCurrentSlideState(); }
+    }
+
+    function toggleEffectControls() {
+        const efEl = document.getElementById('imgEffect'); if(!efEl) return;
+        const ef = efEl.value; const ctrls = document.getElementById('effectControls'); const wInt = document.getElementById('effectIntensityWrapper'); const dt = document.getElementById('duotoneColors');
+        if(ef === 'none') { ctrls.style.display = 'none'; }
+        else {
+            ctrls.style.display = 'block';
+            if(ef === 'duotone') { wInt.style.display = 'none'; dt.style.display = 'grid'; } else { wInt.style.display = 'flex'; dt.style.display = 'none'; }
+        }
+    }
+
+    function setGradDir(dir) {
+        document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); document.getElementById('dir_' + dir).classList.add('active');
+        document.getElementById('gradDir').value = dir; updateCurrentSlideState(); generatePreview();
+    }
+    function setLogoPos(pos) {
+        document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active')); document.getElementById('pos_' + pos).classList.add('active');
+        document.getElementById('logoPos').value = pos; updateCurrentSlideState(); generatePreview();
+    }
+
+    function updateFileName(input, textId) { const span = document.getElementById(textId); if(input.files && input.files.length > 0) span.innerText = input.files[0].name; else span.innerText = "Nenhuma imagem"; }
+
+    function resizeAndCompressImage(file, maxDim = 2500) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                let img = new Image();
+                img.onload = () => {
+                    let w = img.width, h = img.height; let isPng = file.type === 'image/png'; let exportType = isPng ? 'image/png' : 'image/jpeg'; let exportQuality = isPng ? undefined : 0.85;
+                    if (w > maxDim || h > maxDim) { if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; } else { w = Math.round((w * maxDim) / h); h = maxDim; } }
+                    let cvs = document.createElement('canvas'); cvs.width = w; cvs.height = h; let ctx = cvs.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+                    resolve(cvs.toDataURL(exportType, exportQuality)); 
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // --- MEGA MOTOR DE HISTÓRICO ---
+    let historyStack = []; let historyIndex = -1; let historyTimeout = null; let isUndoRedo = false;
+
+    function saveHistory() {
+        if (isUndoRedo) return;
+        if(!isProgrammaticUpdate && slides.length > 0) slides[currentSlide] = getFormState();
+        const currentSlidesStr = JSON.stringify(slides);
+        if (historyIndex >= 0) {
+            const lastState = JSON.parse(historyStack[historyIndex]);
+            if (JSON.stringify(lastState.slides) === currentSlidesStr) {
+                if (lastState.currentSlide !== currentSlide) { lastState.currentSlide = currentSlide; historyStack[historyIndex] = JSON.stringify(lastState); }
+                return; 
+            }
+        }
+        const currentStateStr = JSON.stringify({ slides: JSON.parse(currentSlidesStr), currentSlide });
+        if (historyIndex < historyStack.length - 1) historyStack = historyStack.slice(0, historyIndex + 1); 
+        historyStack.push(currentStateStr);
+        if (historyStack.length > 30) historyStack.shift(); else historyIndex++;
+        updateUndoRedoButtons();
+    }
+    function forceSaveHistory() { clearTimeout(historyTimeout); saveHistory(); }
+    function undo() { if (historyIndex > 0) { isUndoRedo = true; historyIndex--; restoreHistoryState(historyStack[historyIndex]); } }
+    function redo() { if (historyIndex < historyStack.length - 1) { isUndoRedo = true; historyIndex++; restoreHistoryState(historyStack[historyIndex]); } }
+    function restoreHistoryState(stateStr) { const state = JSON.parse(stateStr); slides = state.slides; switchSlide(state.currentSlide, () => { isUndoRedo = false; updateUndoRedoButtons(); }); }
+    function updateUndoRedoButtons() { const btnUndo = document.getElementById('btnUndo'); const btnRedo = document.getElementById('btnRedo'); if(btnUndo) btnUndo.disabled = historyIndex <= 0; if(btnRedo) btnRedo.disabled = historyIndex >= historyStack.length - 1; }
+
+    window.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject(); }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+    });
+
+    const UI_FIELDS = ['layoutFormat', 'solidBgToggle', 'zoom', 'posX', 'posY', 'flipXToggle', 'flipYToggle', 'gradColor', 'gradDir', 'gradSolid', 'gradFade', 'gradOpac', 'quoteToggle', 'useWebFonts', 'fontFamily', 'tPosY', 'tPosX', 'liveToggle', 'tagToggle', 'tagBleedToggle', 'mTag', 'cTag', 'cTagText', 'cBg', 'useCustomFooterToggle', 'customFooterBehavior', 'customTextColorToggle', 'cTitle', 'cDesc', 'logoPos', 'logoSize', 'logoPosX', 'logoPosY', 'logoOpacity', 'frameStyle', 'footerIcon', 'footerText', 'footerDate', 'imgEffect', 'effectIntensity', 'duotoneDark', 'duotoneLight', 'duotoneContrast'];
+    
+    let slides = []; let currentSlide = 0; let isProgrammaticUpdate = false; 
+
+    function applyGlobalFormat(val) {
+        let oldFormat = slides[currentSlide].layoutFormat || '3:4'; if (oldFormat === val) return;
+        forceSaveHistory(); document.getElementById('layoutFormat').value = val;
+        let ratio = val === '9:16' ? (1920 / 1440) : (1440 / 1920);
+        slides.forEach(s => { s.layoutFormat = val; if (s.tPosY) s.tPosY = Math.round(s.tPosY * ratio); if (s.logoPosY) s.logoPosY = Math.round(s.logoPosY * ratio); });
+        let currentY = Math.round(document.getElementById('tPosY').value * ratio); document.getElementById('tPosY').value = currentY; document.getElementById('numTPosY').value = currentY;
+        let currentLogoY = Math.round(document.getElementById('logoPosY').value * ratio); document.getElementById('logoPosY').value = currentLogoY; document.getElementById('numLogoPosY').value = currentLogoY;
+        canvas.style.aspectRatio = val === '9:16' ? '9/16' : '3/4'; updateCurrentSlideState(); generatePreview();
+    }
+
+    function applyGlobalFooter() {
+        let fStyle = document.getElementById('frameStyle').value; let fIcon = document.getElementById('footerIcon').value;
+        let fText = document.getElementById('footerText').value; let fDate = document.getElementById('footerDate').value;
+        forceSaveHistory();
+        slides.forEach((s, i) => { if (fStyle.includes('curve')) s.frameStyle = (i === 0) ? fStyle : 'line'; else s.frameStyle = fStyle; s.footerIcon = fIcon; s.footerText = fText; s.footerDate = fDate; });
+        updateCurrentSlideState(); generatePreview();
+    }
+
+    function getFormState() {
+        let alignVal = 'left'; if(document.getElementById('alignCenter').classList.contains('active')) alignVal = 'center'; if(document.getElementById('alignRight').classList.contains('active')) alignVal = 'right';
+        let state = { imgData: bgImage.src, bgTemplateData: bgTemplateImg.src, customFooterData: customFooterImg.src, userLogoData: userLogoImg.src, align: alignVal, textBlocks: JSON.parse(JSON.stringify(currentTextBlocks)) };
+        UI_FIELDS.forEach(id => { let el = document.getElementById(id); if(el) state[id] = el.type === 'checkbox' ? el.checked : el.value; });
+        return state;
+    }
+
+    function updateCurrentSlideState() {
+        if(isProgrammaticUpdate || slides.length === 0) return; slides[currentSlide] = getFormState();
+        if(!isUndoRedo) { clearTimeout(historyTimeout); historyTimeout = setTimeout(saveHistory, 600); }
+    }
+
+    function renderCarouselBar() {
+        const bar = document.getElementById('carouselBar'); bar.innerHTML = '';
+        let btnUndo = document.createElement('button'); btnUndo.id = 'btnUndo'; btnUndo.type = 'button'; btnUndo.innerHTML = '↶'; btnUndo.className = 'slide-btn aux-btn'; btnUndo.title = 'Desfazer (Ctrl+Z)'; btnUndo.onclick = undo; bar.appendChild(btnUndo);
+        let btnRedo = document.createElement('button'); btnRedo.id = 'btnRedo'; btnRedo.type = 'button'; btnRedo.innerHTML = '↷'; btnRedo.className = 'slide-btn aux-btn'; btnRedo.title = 'Refazer (Ctrl+Y)'; btnRedo.onclick = redo; bar.appendChild(btnRedo);
+        let div = document.createElement('div'); div.style = "width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 5px; flex-shrink: 0;"; bar.appendChild(div);
+        
+        slides.forEach((slide, i) => {
+            let btn = document.createElement('button'); btn.type = 'button'; btn.innerText = (i + 1); btn.className = i === currentSlide ? 'slide-btn active' : 'slide-btn'; btn.draggable = true; 
+            btn.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', i); setTimeout(() => btn.style.opacity = '0.5', 0); });
+            btn.addEventListener('dragend', () => { btn.style.opacity = '1'; document.querySelectorAll('.slide-btn').forEach(b => b.classList.remove('drag-over')); });
+            btn.addEventListener('dragover', (e) => { e.preventDefault(); btn.classList.add('drag-over'); });
+            btn.addEventListener('dragleave', () => { btn.classList.remove('drag-over'); });
+            btn.addEventListener('drop', (e) => {
+                e.preventDefault(); btn.classList.remove('drag-over'); let fromIndex = parseInt(e.dataTransfer.getData('text/plain')); let toIndex = i;
+                if (fromIndex !== toIndex && !isNaN(fromIndex)) { forceSaveHistory(); let movedSlide = slides.splice(fromIndex, 1)[0]; slides.splice(toIndex, 0, movedSlide); isProgrammaticUpdate = true; switchSlide(toIndex, () => forceSaveHistory()); }
+            });
+            btn.onclick = () => switchSlide(i); bar.appendChild(btn);
+        });
+        
+        let addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.innerText = '+'; addBtn.className = 'slide-btn add'; addBtn.onclick = addNewSlide; bar.appendChild(addBtn);
+        const btnAllTab = document.getElementById('btnDownAllTab');
+        if (slides.length > 1) { let delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.innerHTML = '🗑️'; delBtn.className = 'slide-btn del'; delBtn.title = "Excluir Slide Atual"; delBtn.onclick = deleteCurrentSlide; bar.appendChild(delBtn); btnAllTab.style.display = 'block';
+        } else { btnAllTab.style.display = 'none'; }
+        updateUndoRedoButtons();
+    }
+
+    function addNewSlide() {
+        updateCurrentSlideState(); 
+        let newState = JSON.parse(JSON.stringify(slides[currentSlide])); 
+        newState.tagToggle = false; newState.userLogoData = ''; 
+        newState.textBlocks.forEach(b => {
+            if (b.type === 'title') b.text = "Card " + (slides.length + 1); else if (b.type === 'body') b.text = "Espaço reservado para o texto..."; else if (b.type === 'list') b.text = "Item 1\nItem 2";
+        });
+        if (newState.frameStyle && newState.frameStyle.includes('curve')) newState.frameStyle = 'line';
+        slides.push(newState); isProgrammaticUpdate = true; switchSlide(slides.length - 1, () => { isProgrammaticUpdate = false; forceSaveHistory(); }); 
+    }
+
+    function switchSlide(index, callback) {
+        if (!isProgrammaticUpdate && !isUndoRedo) {
+            if (historyIndex >= 0) { let lastState = JSON.parse(historyStack[historyIndex]); lastState.currentSlide = index; lastState.slides = JSON.parse(JSON.stringify(slides)); historyStack[historyIndex] = JSON.stringify(lastState); }
+        }
+
+        isProgrammaticUpdate = true; currentSlide = index; let state = slides[index];
+
+        document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+        if(state.align === 'center') document.getElementById('alignCenter').classList.add('active'); else if(state.align === 'right') document.getElementById('alignRight').classList.add('active'); else document.getElementById('alignLeft').classList.add('active');
+        document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active')); if(state.gradDir) { let db = document.getElementById('dir_' + state.gradDir); if(db) db.classList.add('active'); }
+        document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active')); if(state.logoPos) { let pb = document.getElementById('pos_' + state.logoPos); if(pb) pb.classList.add('active'); }
+
+        document.getElementById('fn_bg').innerText = state.imgData ? "Imagem Carregada" : "Nenhuma imagem"; document.getElementById('fn_tpl').innerText = state.bgTemplateData ? "Textura Carregada" : "Nenhuma imagem";
+        document.getElementById('fn_foot').innerText = state.customFooterData ? "Rodapé Carregado" : "Nenhuma imagem"; document.getElementById('fn_user_logo').innerText = state.userLogoData ? "Logo Carregada" : "Nenhuma logo";
+
+        currentTextBlocks = state.textBlocks || []; renderTextBlocksUI();
+
+        UI_FIELDS.forEach(id => {
+            let el = document.getElementById(id);
+            if (el) {
+                if (el.type === 'checkbox') { el.checked = !!state[id]; if(id === 'customTextColorToggle') toggleCustomColors(); if(id === 'useWebFonts') toggleWebFonts(); } 
+                else { el.value = state[id] !== undefined ? state[id] : (id==='gradOpac'?'100':(id==='imgEffect'?'none':(id==='tPosX'?'70':(id==='duotoneContrast'?'150':el.value)))); }
+            }
+        });
+        
+        toggleEffectControls();
+
+        ['zoom','posX','posY','gradSolid','gradFade','gradOpac','tPosY', 'tPosX', 'logoSize', 'logoPosX', 'logoPosY', 'logoOpacity', 'effectIntensity', 'duotoneContrast'].forEach(id => {
+            let numEl = document.getElementById('num' + id.charAt(0).toUpperCase() + id.slice(1)); let rangeEl = document.getElementById(id); if(numEl && rangeEl) numEl.value = rangeEl.value;
+        });
+
+        document.querySelectorAll('.palette-color').forEach(p => p.classList.remove('active'));
+        let paletteMatch = Array.from(document.querySelectorAll('.palette-color')).find(p => hexToRgbValues(p.style.backgroundColor) === hexToRgbValues(state.cTag || '#76ce3f'));
+        if(paletteMatch) paletteMatch.classList.add('active');
+
+        renderCarouselBar();
+
+        const loadImg = (imgObj, src) => new Promise(resolve => {
+            if (!src) { imgObj.src = ''; resolve(); return; } if (imgObj.src === src && imgObj.naturalWidth > 0) { resolve(); return; }
+            let isResolved = false; const done = () => { if(isResolved) return; isResolved = true; imgObj.onload = null; imgObj.onerror = null; resolve(); };
+            imgObj.onload = done; imgObj.onerror = done; imgObj.src = src; if (imgObj.complete && imgObj.naturalWidth > 0) done(); 
+        });
+
+        let font = state.fontFamily || 'Arial'; let useWeb = state.useWebFonts !== undefined ? state.useWebFonts : false;
+        let fontPromise = useWeb ? document.fonts.load(`16px "${font}"`).catch(()=>null) : Promise.resolve();
+
+        Promise.all([ loadImg(bgImage, state.imgData), loadImg(bgTemplateImg, state.bgTemplateData), loadImg(customFooterImg, state.customFooterData), loadImg(userLogoImg, state.userLogoData), fontPromise ])
+        .then(() => { setTimeout(() => { isProgrammaticUpdate = false; generatePreview(); if(callback) callback(); }, 15); });
+    }
+
+    function deleteCurrentSlide() {
+        if(slides.length === 1) return;
+        if(confirm("Excluir este slide?")) { forceSaveHistory(); isProgrammaticUpdate = true; slides.splice(currentSlide, 1); let targetIndex = Math.max(0, currentSlide - 1); switchSlide(targetIndex, () => forceSaveHistory()); }
+    }
+
+    function sync(el, targetId) { document.getElementById(targetId).value = el.value; updateCurrentSlideState(); generatePreview(); }
+    function setAlign(val, btn) { document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateCurrentSlideState(); generatePreview(); }
+    function toggleCustomColors() { document.getElementById('customTextColorBox').style.display = document.getElementById('customTextColorToggle').checked ? 'grid' : 'none'; }
+    function applyGlobalColor(color) { document.getElementById('cTag').value = color; slides.forEach(slide => { slide.cTag = color; }); updateCurrentSlideState(); generatePreview(); }
+    function setQuickColor(el, color) { document.querySelectorAll('.palette-color').forEach(p => p.classList.remove('active')); el.classList.add('active'); applyGlobalColor(color); }
+
+    function toggleTab(id, btn) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active'); if(btn) btn.classList.add('active');
+        let cp = document.querySelector('.controls-pane'); if(cp) cp.classList.add('open');
+    }
+
+    // Fechar Gaveta no Mobile
+    document.querySelector('.preview-pane').addEventListener('click', function(e) {
+        if (e.target.closest('.canvas-wrapper') || e.target === this) {
+            let cp = document.querySelector('.controls-pane'); if(cp) cp.classList.remove('open');
+        }
+    });
+
+    // Mágica da Alça de Gaveta (Touch)
+    const sheetHandle = document.getElementById('sheetHandle');
+    const mPanel = document.getElementById('mobilePanelContainer');
+    let startY, startH;
+    if(sheetHandle) {
+        sheetHandle.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY; startH = mPanel.getBoundingClientRect().height; mPanel.style.transition = 'none';
+        }, {passive: true});
+
+        sheetHandle.addEventListener('touchmove', (e) => {
+            let deltaY = startY - e.touches[0].clientY; let newHeight = startH + deltaY;
+            if(newHeight > window.innerHeight * 0.2 && newHeight < window.innerHeight * 0.85) { mPanel.style.maxHeight = newHeight + 'px'; mPanel.style.height = newHeight + 'px'; }
+        }, {passive: true});
+
+        sheetHandle.addEventListener('touchend', () => { mPanel.style.transition = '0.3s ease-out'; });
+    }
+
+    function hexToRgbValues(hex) {
+        if(hex.startsWith('rgb')) { let matches = hex.match(/\d+/g); return matches ? `${matches[0]}, ${matches[1]}, ${matches[2]}` : '0,0,0'; }
+        hex = hex.replace(/^#/, ''); if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        let num = parseInt(hex, 16); return `${num >> 16}, ${(num >> 8) & 255}, ${num & 255}`;
+    }
+
+    // =========================================================
+    // MEGA MOTOR DE RICH TEXT
+    // =========================================================
+    function renderRichText(context, text, x, y, maxWidth, baseSize, lineHeight, align, draw, baseWeight, fontFamily, listType = 'none', useThemeColor = false, themeColor = '#000', normalColor = '#FFF', highlightBg = '#76ce3f', highlightText = '#001a33') {
+        if(!text) return y;
+        let tokens = []; let current = ""; let state = { hl: false, b: false, i: false, s: false, u: false, sup: false };
+        let pushCurrent = () => { if(current.length > 0) { tokens.push({ text: current, ...state }); current = ""; } };
+
+        for(let j=0; j<text.length; j++) {
+            if (text.startsWith('**', j)) { pushCurrent(); state.b = !state.b; j+=1; } else if (text.startsWith('__', j)) { pushCurrent(); state.u = !state.u; j+=1; }
+            else if (text[j] === '*') { pushCurrent(); state.hl = !state.hl; } else if (text[j] === '_') { pushCurrent(); state.i = !state.i; }
+            else if (text[j] === '~') { pushCurrent(); state.s = !state.s; } else if (text[j] === '^') { pushCurrent(); state.sup = !state.sup; }
+            else if (text[j] === '\n') { pushCurrent(); tokens.push({ text: '\n', isLineBreak: true }); } else { current += text[j]; }
+        }
+        pushCurrent();
+
+        let fragments = [];
+        tokens.forEach(t => {
+            if (t.isLineBreak) { fragments.push(t); return; }
+            let parts = t.text.split(/(\s+)/); parts.forEach(p => { if (p.length > 0) fragments.push({ text: p, b: t.b, i: t.i, s: t.s, u: t.u, sup: t.sup, hl: t.hl }); });
+        });
+
+        const getFont = (f) => { let sz = f.sup ? baseSize * 0.6 : baseSize; let wt = f.b || baseWeight === 'bold' ? 'bold ' : ''; let st = f.i ? 'italic ' : ''; return `${st}${wt}${sz}px "${fontFamily}"`; };
+
+        let currentY = y; let paragraphs = []; let curPara = [];
+        fragments.forEach(f => { if (f.isLineBreak) { paragraphs.push(curPara); curPara = []; } else { curPara.push(f); } }); paragraphs.push(curPara);
+
+        paragraphs.forEach((paraFragments, pIndex) => {
+            if (paraFragments.length === 0) { currentY += lineHeight; return; }
+
+            let bullet = '';
+            if (listType === 'bullets') bullet = '• '; else if (listType === 'numbers') bullet = `${pIndex + 1}. `; else if (listType === 'letters') bullet = `${String.fromCharCode(65 + pIndex)}. `;
+
+            let bW = 0; if (bullet) { context.font = `${baseWeight === 'bold' ? 'bold ' : ''}${baseSize}px "${fontFamily}"`; bW = context.measureText(bullet).width; }
+
+            let textMaxWidth = maxWidth - bW; let lines = []; let currentLine = []; let currentW = 0;
+
+            paraFragments.forEach(f => {
+                context.font = getFont(f); let w = context.measureText(f.text).width;
+                if (f.text.trim() === '') { currentLine.push(f); currentW += w; } 
+                else {
+                    if (currentW + w > textMaxWidth && currentLine.some(x => x.text.trim() !== '')) {
+                        let displayW = currentW;
+                        for(let i=currentLine.length-1; i>=0; i--) { if(currentLine[i].text.trim() === '') { context.font = getFont(currentLine[i]); displayW -= context.measureText(currentLine[i].text).width; } else break; }
+                        lines.push({ fragments: currentLine, w: displayW }); currentLine = [f]; currentW = w;
+                    } else { currentLine.push(f); currentW += w; }
+                }
+            });
+            
+            if (currentLine.length > 0) {
+                let displayW = currentW;
+                for(let i=currentLine.length-1; i>=0; i--) { if(currentLine[i].text.trim() === '') { context.font = getFont(currentLine[i]); displayW -= context.measureText(currentLine[i].text).width; } else break; }
+                lines.push({ fragments: currentLine, w: displayW });
+            }
+
+            lines.forEach((line, lIndex) => {
+                let startX = x; let totalLineW = line.w + (lIndex === 0 ? bW : 0);
+                if (align === 'center') startX = (canvas.width/2) - (totalLineW/2); else if (align === 'right') startX = x + maxWidth - totalLineW;
+                let curX = startX;
+
+                if (lIndex === 0 && bullet) {
+                    if(draw) { context.font = `${baseWeight === 'bold' ? 'bold ' : ''}${baseSize}px "${fontFamily}"`; context.fillStyle = useThemeColor ? themeColor : normalColor; context.textAlign = 'left'; context.fillText(bullet, curX, currentY); }
+                    curX += bW;
+                }
+
+                line.fragments.forEach(f => {
+                    context.font = getFont(f); let w = context.measureText(f.text).width;
+                    if(draw) {
+                        if (f.hl) { context.fillStyle = highlightBg; let h = baseSize * 1.3; let hlY = currentY - baseSize * 0.9; context.fillRect(curX, hlY, w, h); }
+                        if (f.text.trim() !== '') { context.fillStyle = f.hl ? highlightText : normalColor; context.textAlign = 'left'; let drawY = f.sup ? currentY - (baseSize * 0.35) : currentY; context.fillText(f.text, curX, drawY); }
+                        if (f.u) { context.strokeStyle = f.hl ? highlightText : normalColor; context.lineWidth = Math.max(2, baseSize * 0.08); ctx.beginPath(); context.moveTo(curX, currentY + baseSize * 0.15); context.lineTo(curX + w, currentY + baseSize * 0.15); context.stroke(); }
+                        if (f.s) { context.strokeStyle = f.hl ? highlightText : normalColor; context.lineWidth = Math.max(2, baseSize * 0.08); ctx.beginPath(); context.moveTo(curX, currentY - baseSize * 0.25); context.lineTo(curX + w, currentY - baseSize * 0.25); context.stroke(); }
+                    }
+                    curX += w;
+                });
+                currentY += lineHeight;
+            });
+        });
+        return currentY;
+    }
+    // =========================================================
+
+    function generatePreview() {
+        const isSolid = document.getElementById('solidBgToggle').checked; const isQuote = document.getElementById('quoteToggle').checked; const isTagExibida = document.getElementById('tagToggle').checked; const isTagBleed = document.getElementById('tagBleedToggle').checked; const isLive = document.getElementById('liveToggle').checked; const useCustomFooter = document.getElementById('useCustomFooterToggle').checked; const useCustomTextColors = document.getElementById('customTextColorToggle').checked;
+        
+        const imgEffectEl = document.getElementById('imgEffect'); const imgEffect = imgEffectEl ? imgEffectEl.value : 'none';
+        const efValEl = document.getElementById('effectIntensity'); const efVal = efValEl ? parseInt(efValEl.value) : 50;
+        
+        const mainColor = document.getElementById('cTag').value; const tagTextColor = document.getElementById('cTagText').value; const bgColor = document.getElementById('cBg').value; const font = document.getElementById('fontFamily').value;
+        let cTitleColor = useCustomTextColors ? document.getElementById('cTitle').value : "#FFF"; let cDescColor = useCustomTextColors ? document.getElementById('cDesc').value : "rgba(255,255,255,0.8)";
+
+        let align = 'left'; if(document.getElementById('alignCenter').classList.contains('active')) align = 'center'; if(document.getElementById('alignRight').classList.contains('active')) align = 'right';
+
+        let formatVal = document.getElementById('layoutFormat').value || '3:4'; let cH = formatVal === '9:16' ? 1920 : 1440;
+        canvas.height = cH; canvas.style.aspectRatio = formatVal === '9:16' ? '9/16' : '3/4';
+        canvas.style.cursor = (!isSolid && bgImage.src && bgImage.naturalWidth !== 0) ? (isDragging ? 'grabbing' : 'grab') : 'default';
+
+        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, 1080, cH);
+
+        // -- LÓGICA DO PAPEL POLAROID --
+        let fStyle = document.getElementById('frameStyle').value; let isPolaroid = (fStyle === 'polaroid');
+        let photoPad = 50; let photoBottomMargin = 300;
+
+        if (isPolaroid) {
+            ctx.fillStyle = '#FAFAFA'; ctx.fillRect(0, 0, 1080, cH);
+            ctx.save(); ctx.beginPath(); ctx.rect(photoPad, photoPad, 1080 - (photoPad*2), cH - photoBottomMargin - photoPad); ctx.clip();
+        }
+
+        if (bgTemplateImg.src && bgTemplateImg.naturalWidth !== 0) {
+            let aspect = bgTemplateImg.width / bgTemplateImg.height; let dW = 1080, dH = 1080 / aspect;
+            if (dH < cH) { dH = cH; dW = cH * aspect; } ctx.drawImage(bgTemplateImg, (1080 - dW)/2, (cH - dH)/2, dW, dH);
+        }
+
+        if (!isSolid && bgImage.src && bgImage.naturalWidth !== 0) {
+            const xOff = parseInt(document.getElementById('posX').value); const yOff = parseInt(document.getElementById('posY').value);
+            const zoomValue = parseFloat(document.getElementById('zoom').value); const scale = zoomValue / 50; 
+            const flipX = document.getElementById('flipXToggle').checked ? -1 : 1; const flipY = document.getElementById('flipYToggle').checked ? -1 : 1;
+            const aspect = bgImage.width / bgImage.height; let dW = 1080, dH = 1080 / aspect;
+            if (dH < cH) { dH = cH; dW = cH * aspect; }
+            let finalDrawW = dW * scale; let finalDrawH = dH * scale;
+
+            ctx.save(); if (!isPolaroid) { ctx.beginPath(); ctx.rect(0, 0, 1080, cH); ctx.clip(); }
+            
+            ctx.scale(flipX, flipY); let destX = (1080 - finalDrawW)/2 + xOff; let destY = (cH - finalDrawH)/2 + yOff;
+            
+            if (imgEffect === 'blur') ctx.filter = `blur(${efVal/5}px)`; 
+            if (imgEffect === 'duotone') { let dtContrast = document.getElementById('duotoneContrast') ? document.getElementById('duotoneContrast').value : 150; ctx.filter = `grayscale(100%) contrast(${dtContrast}%)`; }
+
+            ctx.drawImage(bgImage, flipX === -1 ? -destX - finalDrawW : destX, flipY === -1 ? -destY - finalDrawH : destY, finalDrawW, finalDrawH);
+            ctx.filter = 'none'; ctx.restore();
+
+            if (imgEffect === 'duotone') {
+                let dtDark = document.getElementById('duotoneDark').value; let dtLight = document.getElementById('duotoneLight').value;
+                ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = dtLight; ctx.fillRect(0,0,1080,cH);
+                ctx.globalCompositeOperation = 'lighten'; ctx.fillStyle = dtDark; ctx.fillRect(0,0,1080,cH);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            if (imgEffect === 'grain' && noisePattern) { ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = efVal / 100; ctx.fillStyle = noisePattern; ctx.fillRect(0,0,1080,cH); ctx.globalAlpha = 1.0; ctx.globalCompositeOperation = 'source-over'; }
+            if (imgEffect === 'halftone' && halftonePattern) { ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = efVal / 100; ctx.fillStyle = halftonePattern; ctx.fillRect(0,0,1080,cH); ctx.globalAlpha = 1.0; ctx.globalCompositeOperation = 'source-over'; }
+            
+            let gSolid = parseInt(document.getElementById('gradSolid').value) / 100; let gFade = parseInt(document.getElementById('gradFade').value) / 100; let gOpac = parseInt(document.getElementById('gradOpac').value) / 100;
+            
+            if ((gSolid > 0 || gFade > 0) && gOpac > 0) {
+                let gDir = document.getElementById('gradDir').value; let gColorRgb = hexToRgbValues(document.getElementById('gradColor').value);
+                let x0=0, y0=0, x1=0, y1=0; let cw = 1080;
+                if (gDir === 'bottom-up') { x0 = 0; y0 = cH; x1 = 0; y1 = 0; } else if (gDir === 'top-down') { x0 = 0; y0 = 0; x1 = 0; y1 = cH; } else if (gDir === 'left-right') { x0 = 0; y0 = 0; x1 = cw; y1 = 0; } else if (gDir === 'right-left') { x0 = cw; y0 = 0; x1 = 0; y1 = 0; }
+
+                let grad = ctx.createLinearGradient(x0, y0, x1, y1); let stopSolid = gSolid; let stopFade = Math.min(gSolid + gFade, 1); let stopMid = stopSolid + ((stopFade - stopSolid) / 2);
+                grad.addColorStop(0, `rgba(${gColorRgb}, ${1 * gOpac})`); if (stopSolid > 0) grad.addColorStop(stopSolid, `rgba(${gColorRgb}, ${1 * gOpac})`); if (stopMid > stopSolid && stopMid < 1) grad.addColorStop(stopMid, `rgba(${gColorRgb}, ${0.5 * gOpac})`); if (stopFade > stopSolid) grad.addColorStop(stopFade, `rgba(${gColorRgb}, 0)`); if (stopFade < 1) grad.addColorStop(1, `rgba(${gColorRgb}, 0)`);
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, cH);
+            }
+        }
+
+        if (isPolaroid) ctx.restore();
+
+        const posY = parseInt(document.getElementById('tPosY').value); 
+        let refSize = currentTextBlocks.length > 0 ? currentTextBlocks[0].size : 70;
+
+        let tag = document.getElementById('mTag').value.toUpperCase(); let tagFaixaHeight = 70;
+        let tagBottom = posY - (refSize * 0.7) - 45; let tagTop = tagBottom - (isTagExibida && tag && !isQuote ? tagFaixaHeight : 0);
+
+        const tPosX_Input = document.getElementById('tPosX'); const padX = tPosX_Input ? parseInt(tPosX_Input.value) : 70;
+        let textStartX = isQuote ? (padX + 50) : padX; let maxW = isQuote ? (1080 - (padX * 2) - 50) : (1080 - (padX * 2));
+
+        if (isLive) {
+            let liveY = tagTop - 25; ctx.fillStyle = "red"; ctx.beginPath();
+            let tx = align === 'center' ? 540 : (align === 'right' ? (1080 - padX) : padX);
+            if (align === 'left') { ctx.arc(tx + 10, liveY - 6, 12, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFF"; ctx.font = `bold 22px "${font}"`; ctx.textAlign = 'left'; ctx.fillText("AO VIVO", tx + 32, liveY); } 
+            else if (align === 'right') { ctx.font = `bold 22px "${font}"`; let w = ctx.measureText("AO VIVO").width; ctx.arc(tx - w - 20, liveY - 6, 12, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFF"; ctx.textAlign = 'right'; ctx.fillText("AO VIVO", tx, liveY); } 
+            else { ctx.font = `bold 22px "${font}"`; let w = ctx.measureText("AO VIVO").width; let startX = tx - (w/2) - 15; ctx.arc(startX, liveY - 6, 12, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFF"; ctx.textAlign = 'left'; ctx.fillText("AO VIVO", startX + 20, liveY); }
+        }
+
+        let totalTextHeight = 0;
+        if (isQuote && currentTextBlocks.length > 0) {
+            ctx.save(); let simY = 0;
+            currentTextBlocks.forEach(b => { let wght = b.type === 'title' ? 'bold' : 'normal'; let bH = renderRichText(ctx, b.text, textStartX, simY, maxW, b.size, b.size * 1.3, align, false, wght, font, b.type==='list'?b.listType:'none', b.listColorToggle, mainColor, cDescColor, mainColor, bgColor) - simY; totalTextHeight += bH + 20; });
+            ctx.restore(); totalTextHeight -= 20; 
+        }
+
+        if (isQuote && currentTextBlocks.length > 0) {
+            ctx.fillStyle = "rgba(255,255,255,0.1)"; if(useCustomTextColors) { let colValues = hexToRgbValues(cTitleColor); ctx.fillStyle = `rgba(${colValues}, 0.15)`; }
+            ctx.font = `bold 350px "${font}"`; ctx.textAlign = 'left'; ctx.fillText("“", padX - 10, posY + 100);
+            if(align !== 'center') { ctx.fillStyle = mainColor; let lineX = align === 'right' ? 1080 - padX - 10 : padX; ctx.fillRect(lineX, posY - (refSize * 0.8), 10, totalTextHeight + (refSize * 0.5)); }
+        }
+
+        if (!isQuote && isTagExibida && tag && !isPolaroid) {
+            ctx.font = `bold 35px "${font}"`; let tagPadding = 20; let tw = ctx.measureText(tag).width; let tagW = tw + (tagPadding * 2);
+            let textX = padX, boxX = padX;
+            if (align === 'left') { textX = textStartX; boxX = textX - tagPadding; } else if (align === 'right') { textX = 1080 - textStartX; boxX = textX - tw - tagPadding; } else { textX = 540; boxX = 540 - tagW/2; }
+            ctx.fillStyle = mainColor;
+            if (isTagBleed) { if (align === 'left') ctx.fillRect(0, tagTop, textX + tw + tagPadding, tagFaixaHeight); else if (align === 'right') ctx.fillRect(boxX, tagTop, 1080 - boxX, tagFaixaHeight); else ctx.fillRect(0, tagTop, 1080, tagFaixaHeight); } else { ctx.fillRect(boxX, tagTop, tagW, tagFaixaHeight); }
+            ctx.fillStyle = tagTextColor; ctx.textAlign = align === 'left' ? 'left' : (align === 'right' ? 'right' : 'center'); ctx.fillText(tag, textX, tagTop + 47); 
+        }
+
+        let drawY = posY;
+        currentTextBlocks.forEach(b => {
+            let wght = b.type === 'title' ? 'bold' : 'normal'; let drawColor = b.type === 'title' ? cTitleColor : cDescColor;
+            drawY = renderRichText(ctx, b.text, textStartX, drawY, maxW, b.size, b.size * 1.3, align, true, wght, font, b.type==='list'?b.listType:'none', b.listColorToggle, mainColor, drawColor, mainColor, bgColor);
+            drawY += 20; 
+        });
+
+        if (userLogoImg.src && userLogoImg.naturalWidth !== 0) {
+            ctx.save(); let opacity = parseInt(document.getElementById('logoOpacity').value) / 100; ctx.globalAlpha = opacity;
+            let scale = parseInt(document.getElementById('logoSize').value) / 100; let baseW = 250; let aspect = userLogoImg.width / userLogoImg.height; let dW = baseW * scale; let dH = dW / aspect;
+            let pos = document.getElementById('logoPos').value; let yOff = parseInt(document.getElementById('logoPosY').value); let xOff = parseInt(document.getElementById('logoPosX').value);
+            let margin = padX; let x = margin + xOff; let y = margin + yOff;
+            
+            if (pos.includes('C')) x = (1080 - dW) / 2 + xOff; if (pos.includes('R')) x = 1080 - margin - dW + xOff; 
+            if (pos === 'C') { x = (1080 - dW) / 2 + xOff; y = (cH - dH) / 2 + yOff; }
+            if (pos.startsWith('B')) { 
+                let footerSpace = 0; let drawCustomFooter = false;
+                if (useCustomFooter && customFooterImg.src && customFooterImg.naturalWidth !== 0) {
+                    let behavior = document.getElementById('customFooterBehavior').value;
+                    if (behavior === 'all' || (behavior === 'cover' && currentSlide === 0) || (behavior === 'cover_last' && (currentSlide === 0 || currentSlide === slides.length - 1))) { drawCustomFooter = true; footerSpace = 1080 / (customFooterImg.width / customFooterImg.height); }
+                }
+                if (!drawCustomFooter && fStyle !== 'none' && fStyle !== 'polaroid') footerSpace = 30; 
+                y = cH - margin - footerSpace - dH + yOff;
+            }
+            ctx.drawImage(userLogoImg, x, y, dW, dH); ctx.restore();
+        }
+
+        let drawCustomFooter = false;
+        if (useCustomFooter && customFooterImg.src && customFooterImg.naturalWidth !== 0) {
+            let behavior = document.getElementById('customFooterBehavior').value;
+            if (behavior === 'all') drawCustomFooter = true; else if (behavior === 'cover' && currentSlide === 0) drawCustomFooter = true; else if (behavior === 'cover_last' && (currentSlide === 0 || currentSlide === slides.length - 1)) drawCustomFooter = true;
+        }
+
+        if(fStyle !== 'none' && !drawCustomFooter) {
+            let icon = document.getElementById('footerIcon').value; let fText = document.getElementById('footerText').value; let fullText = icon ? `${icon} ${fText}` : fText;
+            ctx.font = `bold 22px "${font}"`; let textW = 0; let hasText = fullText.trim() !== ''; if (hasText) textW = ctx.measureText(fullText).width;
+            ctx.strokeStyle = mainColor; ctx.lineWidth = 4; ctx.beginPath(); let footY = cH - 30;
+
+            if (fStyle === 'polaroid') {
+                let fDateInput = document.getElementById('footerDate'); let fDate = fDateInput ? fDateInput.value : ''; if(fDate) fDate = fDate.split('-').reverse().join('/'); 
+                ctx.fillStyle = '#222'; ctx.font = 'bold 50px "Caveat", cursive'; ctx.textAlign = 'center'; let writeY = cH - 130; 
+                if (fullText.trim()) ctx.fillText(fullText, 540, writeY);
+                if (fDate) { ctx.font = '40px "Caveat", cursive'; ctx.fillStyle = '#666'; ctx.textAlign = 'right'; ctx.save(); ctx.translate(950, writeY + 40); ctx.rotate(-0.04); ctx.fillText(fDate, 0, 0); ctx.restore(); }
+                ctx.textAlign = 'left';
+            } else if (fStyle === 'curve_right') {
+                ctx.moveTo(1050, 0); ctx.lineTo(1050, footY - 100); ctx.arcTo(1050, footY, 950, footY, 100); if (hasText) { let gapHalf = Math.max(110, (textW / 2) + 20); ctx.lineTo(540 + gapHalf, footY); ctx.moveTo(540 - gapHalf, footY); } ctx.lineTo(0, footY); 
+            } else if (fStyle === 'curve_left') {
+                ctx.moveTo(30, 0); ctx.lineTo(30, footY - 100); ctx.arcTo(30, footY, 130, footY, 100); if (hasText) { let gapHalf = Math.max(110, (textW / 2) + 20); ctx.lineTo(540 - gapHalf, footY); ctx.moveTo(540 + gapHalf, footY); } ctx.lineTo(1080, footY);
+            } else if (fStyle === 'editorial') {
+                ctx.lineWidth = 2; ctx.moveTo(70, 70); ctx.lineTo(1010, 70); ctx.moveTo(70, 80); ctx.lineTo(1010, 80);
+                if (hasText) { let gapHalf = Math.max(20, (textW / 2) + 20); ctx.moveTo(70, footY); ctx.lineTo(540 - gapHalf, footY); ctx.moveTo(540 + gapHalf, footY); ctx.lineTo(1010, footY); ctx.moveTo(70, footY - 10); ctx.lineTo(540 - gapHalf, footY - 10); ctx.moveTo(540 + gapHalf, footY - 10); ctx.lineTo(1010, footY - 10);
+                } else { ctx.moveTo(70, footY); ctx.lineTo(1010, footY); ctx.moveTo(70, footY - 10); ctx.lineTo(1010, footY - 10); }
+            } else if (fStyle === 'terminal') {
+                ctx.lineWidth = 6; ctx.moveTo(100, 70); ctx.lineTo(70, 70); ctx.lineTo(70, 100); ctx.moveTo(980, 70); ctx.lineTo(1010, 70); ctx.lineTo(1010, 100);
+                ctx.moveTo(100, footY); ctx.lineTo(70, footY); ctx.lineTo(70, footY - 30); ctx.moveTo(980, footY); ctx.lineTo(1010, footY); ctx.lineTo(1010, footY - 30);
+            } else if (fStyle === 'line') {
+                if (hasText) { let gapHalf = Math.max(20, (textW / 2) + 20); ctx.moveTo(0, footY); ctx.lineTo(540 - gapHalf, footY); ctx.moveTo(540 + gapHalf, footY); ctx.lineTo(1080, footY);
+                } else { ctx.moveTo(0, footY); ctx.lineTo(1080, footY); }
+            }
+            if(fStyle !== 'polaroid') ctx.stroke();
+            if (hasText && fStyle !== 'polaroid') { ctx.fillStyle = "#FFF"; ctx.textAlign = "center"; ctx.fillText(fullText, 540, footY + (fStyle === 'editorial' ? -2 : 8)); ctx.textAlign = "left"; }
+        }
+
+        if (drawCustomFooter) { let fW = 1080; let fH = 1080 / (customFooterImg.width / customFooterImg.height); ctx.drawImage(customFooterImg, 0, cH - fH, fW, fH); }
+        if(!isProgrammaticUpdate && slides.length > 0) slides[currentSlide] = getFormState();
+    }
+
+    function clearImg(type) {
+        if(type === 'bg') { bgImage.src = ''; document.getElementById('imgLoad').value = ''; document.getElementById('fn_bg').innerText = "Nenhuma imagem"; } 
+        else if(type === 'tpl') { bgTemplateImg.src = ''; document.getElementById('bgTemplateLoad').value = ''; document.getElementById('fn_tpl').innerText = "Nenhuma imagem"; } 
+        else if(type === 'foot') { customFooterImg.src = ''; document.getElementById('customFooterLoad').value = ''; document.getElementById('fn_foot').innerText = "Nenhuma imagem"; document.getElementById('useCustomFooterToggle').checked = false; } 
+        else if(type === 'user_logo') { userLogoImg.src = ''; document.getElementById('userLogoLoad').value = ''; document.getElementById('fn_user_logo').innerText = "Nenhuma logo"; }
+        forceSaveHistory(); updateCurrentSlideState(); generatePreview();
+    }
+
+    let isDragging = false; let startDragX = 0, startDragY = 0; let initialPosX = 0, initialPosY = 0;
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect(); var scaleX = canvas.width / rect.width; var scaleY = canvas.height / rect.height;
+        var clientX = evt.clientX; var clientY = evt.clientY;
+        if (evt.touches && evt.touches.length > 0) { clientX = evt.touches[0].clientX; clientY = evt.touches[0].clientY; }
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    canvas.addEventListener('mousedown', startDrag); canvas.addEventListener('touchstart', startDrag, {passive: false});
+    window.addEventListener('mousemove', drag); window.addEventListener('touchmove', drag, {passive: false});
+    window.addEventListener('mouseup', endDrag); window.addEventListener('touchend', endDrag);
+
+    function startDrag(e) {
+        if (document.getElementById('solidBgToggle').checked || !bgImage.src) return;
+        isDragging = true; let pos = getMousePos(canvas, e); startDragX = pos.x; startDragY = pos.y;
+        initialPosX = parseInt(document.getElementById('posX').value) || 0; initialPosY = parseInt(document.getElementById('posY').value) || 0; generatePreview();
+    }
+
+    function drag(e) {
+        if (!isDragging) return; if(e.cancelable && e.type === 'touchmove') e.preventDefault(); 
+        let pos = getMousePos(canvas, e); let dx = (pos.x - startDragX) * 2; let dy = (pos.y - startDragY) * 2;
+        const flipX = document.getElementById('flipXToggle').checked ? -1 : 1; const flipY = document.getElementById('flipYToggle').checked ? -1 : 1;
+        let newX = Math.round(initialPosX + (dx * flipX)); let newY = Math.round(initialPosY + (dy * flipY));
+        newX = Math.max(-1000, Math.min(1000, newX)); newY = Math.max(-1000, Math.min(1000, newY));
+        document.getElementById('posX').value = newX; document.getElementById('numX').value = newX; document.getElementById('posY').value = newY; document.getElementById('numY').value = newY;
+        generatePreview();
+    }
+    function endDrag() { if(isDragging) { isDragging = false; forceSaveHistory(); updateCurrentSlideState(); generatePreview(); } }
+
+    document.getElementById('imgLoad').onchange = async e => {
+        let file = e.target.files[0]; if(!file) return; updateFileName(e.target, 'fn_bg'); let b64 = await resizeAndCompressImage(file);
+        await new Promise(resolve => { bgImage.onload = resolve; bgImage.onerror = resolve; bgImage.src = b64; if(bgImage.complete) resolve(); });
+        forceSaveHistory(); updateCurrentSlideState(); generatePreview();
+    };
+    document.getElementById('bgTemplateLoad').onchange = async e => {
+        let file = e.target.files[0]; if(!file) return; updateFileName(e.target, 'fn_tpl'); let b64 = await resizeAndCompressImage(file);
+        await new Promise(resolve => { bgTemplateImg.onload = resolve; bgTemplateImg.onerror = resolve; bgTemplateImg.src = b64; if(bgTemplateImg.complete) resolve(); });
+        forceSaveHistory(); updateCurrentSlideState(); generatePreview();
+    };
+    document.getElementById('customFooterLoad').onchange = async e => {
+        let file = e.target.files[0]; if(!file) return; updateFileName(e.target, 'fn_foot'); let b64 = await resizeAndCompressImage(file);
+        await new Promise(resolve => { customFooterImg.onload = resolve; customFooterImg.onerror = resolve; customFooterImg.src = b64; if(customFooterImg.complete) resolve(); });
+        document.getElementById('useCustomFooterToggle').checked = true; forceSaveHistory(); updateCurrentSlideState(); generatePreview(); 
+    };
+    document.getElementById('userLogoLoad').onchange = async e => {
+        let file = e.target.files[0]; if(!file) return; updateFileName(e.target, 'fn_user_logo'); let b64 = await resizeAndCompressImage(file);
+        await new Promise(resolve => { userLogoImg.onload = resolve; userLogoImg.onerror = resolve; userLogoImg.src = b64; if(userLogoImg.complete) resolve(); });
+        forceSaveHistory(); updateCurrentSlideState(); generatePreview(); 
+    };
+
+    function triggerGlobalToast(msg = "💾 Projeto Salvo!") {
+        const toast = document.getElementById('globalToast'); toast.innerText = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    async function saveProject() {
+        updateCurrentSlideState(); const dataStr = JSON.stringify(slides);
+        if ('showSaveFilePicker' in window) {
+            try {
+                if (!fileHandle) { fileHandle = await window.showSaveFilePicker({ suggestedName: "soter-feed-projeto.json", types: [{ description: 'Projeto Soter', accept: {'application/json': ['.json']} }] }); }
+                document.getElementById('pNameText').innerText = fileHandle.name.replace('.json', '');
+                const writable = await fileHandle.createWritable(); await writable.write(dataStr); await writable.close(); triggerGlobalToast();
+            } catch (err) { if (err.name !== 'AbortError') fallbackSave(dataStr); }
+        } else { fallbackSave(dataStr); }
+    }
+    function fallbackSave(dataStr) {
+        const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "soter-feed-projeto.json"; a.click(); URL.revokeObjectURL(url); triggerGlobalToast();
+    }
+
+    async function loadProjectModern() {
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [handle] = await window.showOpenFilePicker({ types: [{ description: 'Projeto Soter', accept: {'application/json': ['.json']} }] });
+                fileHandle = handle; const file = await handle.getFile(); document.getElementById('pNameText').innerText = file.name.replace('.json', '');
+                const text = await file.text(); processLoadedData(text);
+            } catch (err) { }
+        } else { document.getElementById('projectLoad').click(); }
+    }
+    function loadProjectFallback(event) {
+        const file = event.target.files[0]; if(!file) return; document.getElementById('pNameText').innerText = file.name.replace('.json', '');
+        const reader = new FileReader(); reader.onload = function(e) { fileHandle = null; processLoadedData(e.target.result); event.target.value = ''; }; reader.readAsText(file);
+    }
+
+    function processLoadedData(text) {
+        try {
+            const loadedSlides = JSON.parse(text);
+            if(Array.isArray(loadedSlides) && loadedSlides.length > 0) {
+                loadedSlides.forEach((s, i) => {
+                    if (s.frameStyle === undefined) { if (s.footerToggle === false) s.frameStyle = 'none'; else if (s.isCoverToggle) s.frameStyle = s.flipLineToggle ? 'curve_left' : 'curve_right'; else s.frameStyle = 'line'; }
+                    if (s.footerText === undefined) s.footerText = "mp.tcu.gov.br"; if (s.footerIcon === undefined) s.footerIcon = "🔗";
+                    if (!s.textBlocks) {
+                        s.textBlocks = [];
+                        if (s.mTitle) s.textBlocks.push({ id: Date.now() + Math.random(), type: 'title', text: s.mTitle, size: s.tSize || 70 });
+                        if (s.mDesc) { if (s.listStyle && s.listStyle !== 'none') { s.textBlocks.push({ id: Date.now() + Math.random(), type: 'list', text: s.mDesc, size: s.dSize || 38, listType: s.listStyle, listColorToggle: s.listColorToggle !== false }); } else { s.textBlocks.push({ id: Date.now() + Math.random(), type: 'body', text: s.mDesc, size: s.dSize || 38 }); } }
+                    }
+                });
+                if (loadedSlides.length > 1 && loadedSlides[0].frameStyle === 'curve_right') { loadedSlides[0].frameStyle = 'curve_left'; }
+                slides = loadedSlides; historyStack = []; historyIndex = -1; isProgrammaticUpdate = true; switchSlide(0, () => { generatePreview(); forceSaveHistory(); triggerGlobalToast("📂 Projeto Carregado!"); }); 
+            }
+        } catch(err) { alert("Erro ao ler o arquivo. Certifique-se de que é um projeto válido (.json)."); }
+    }
+
+    function downloadCurrent(idxOverride) { const link = document.createElement('a'); let idx = idxOverride ? idxOverride : (currentSlide + 1); link.download = `soter-feed-slide-${idx}.png`; link.href = canvas.toDataURL('image/png'); link.click(); }
+    async function downloadAll() {
+        if(!confirm(`Deseja baixar todos os ${slides.length} slides em sequência?`)) return; let originalSlide = currentSlide;
+        for(let i = 0; i < slides.length; i++) { await new Promise(resolve => { switchSlide(i, () => { setTimeout(() => { downloadCurrent(i + 1); resolve(); }, 300); }); }); } switchSlide(originalSlide);
+    }
+    async function exportProjectPackage() {
+        if (typeof JSZip === 'undefined') { alert("Biblioteca JSZip não carregou. Verifique sua internet."); return; }
+        let projName = prompt("Digite o nome do projeto (sem acentos ou espaços):", "Projeto_Soter"); if (!projName) return; 
+
+        document.getElementById('pNameText').innerText = projName; document.getElementById('btnExportZip').innerText = "📦 Empacotando...";
+        let zip = new JSZip(); let root = zip.folder(projName); let fLayout = root.folder("layout"); let fFinal = root.folder("final"); let fVinculos = root.folder("vinculos"); let fFonts = root.folder("fonts");
+
+        updateCurrentSlideState(); fLayout.file(projName + ".json", JSON.stringify(slides));
+        let fontsUsed = new Set(); slides.forEach(s => fontsUsed.add(s.fontFamily || 'Arial'));
+        let readmeFonts = "Fontes utilizadas neste projeto:\n\n" + Array.from(fontsUsed).map(f => "- " + f).join("\n") + "\n\n(Aviso: Se usou Google Fonts, elas já estão embutidas. Se usou fonte de sistema, instale na máquina.)"; fFonts.file("leia-me.txt", readmeFonts);
+
+        let originalSlide = currentSlide; let vinculosExtraidos = new Set(); 
+        for (let i = 0; i < slides.length; i++) {
+            await new Promise(resolve => {
+                switchSlide(i, () => {
+                    setTimeout(() => {
+                        let dataUrl = canvas.toDataURL('image/png'); fFinal.file(`Card_${i + 1}.png`, dataUrl.split(',')[1], {base64: true}); let st = slides[i];
+                        const saveVinculo = (b64Src, prefix) => {
+                            if (b64Src && b64Src.startsWith('data:image')) {
+                                if (vinculosExtraidos.has(b64Src)) return; vinculosExtraidos.add(b64Src);
+                                let ext = b64Src.split(';')[0].match(/jpeg|png|gif/)[0] || 'jpg'; if(ext === 'jpeg') ext = 'jpg';
+                                fVinculos.file(`${prefix}_Card_${i+1}.${ext}`, b64Src.split(',')[1], {base64: true});
+                            }
+                        };
+                        saveVinculo(st.imgData, 'foto_principal'); saveVinculo(st.bgTemplateData, 'textura_fundo'); saveVinculo(st.customFooterData, 'rodape_parceiros'); saveVinculo(st.userLogoData, 'logo_marca'); resolve();
+                    }, 300);
+                });
+            });
+        }
+        switchSlide(originalSlide);
+        zip.generateAsync({type:"blob"}).then(function(content) {
+            const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = projName + ".zip"; link.click(); document.getElementById('btnExportZip').innerText = "📦 Exportar Pacote Completo (ZIP)"; triggerGlobalToast("📦 Pacote Baixado!");
+        });
+    }
+
+    const igCarousel = document.getElementById('igCarousel'); let igIsDown = false; let igStartX; let igScrollLeft;
+    igCarousel.addEventListener('mousedown', (e) => { igIsDown = true; igCarousel.style.scrollSnapType = 'none'; igStartX = e.pageX - igCarousel.offsetLeft; igScrollLeft = igCarousel.scrollLeft; });
+    igCarousel.addEventListener('mouseleave', () => { igIsDown = false; igCarousel.style.scrollSnapType = 'x mandatory'; });
+    window.addEventListener('mouseup', () => { if(igIsDown) { igIsDown = false; igCarousel.style.scrollSnapType = 'x mandatory'; } });
+    igCarousel.addEventListener('mousemove', (e) => { if (!igIsDown) return; e.preventDefault(); const x = e.pageX - igCarousel.offsetLeft; igCarousel.scrollLeft = igScrollLeft - (x - igStartX) * 1.5; });
+
+    async function openMockup() {
+        if(slides.length === 0) return; updateCurrentSlideState();
+        const modal = document.getElementById('mockupModal'); const carousel = document.getElementById('igCarousel'); const loading = document.getElementById('mockupLoading'); const post = document.getElementById('igPost'); const closeBtn = document.getElementById('closeMockupBtn');
+        modal.classList.add('active'); post.style.display = 'none'; closeBtn.style.display = 'none'; loading.style.display = 'flex'; carousel.innerHTML = ''; carousel.scrollLeft = 0;
+        let format = document.getElementById('layoutFormat').value || '3:4'; document.getElementById('igCarouselContainer').style.aspectRatio = format === '9:16' ? '9/16' : '3/4';
+        let originalSlide = currentSlide;
+        for(let i = 0; i < slides.length; i++) { await new Promise(resolve => { switchSlide(i, () => { setTimeout(() => { let img = document.createElement('img'); img.src = canvas.toDataURL('image/png'); img.className = 'ig-slide'; img.draggable = false; carousel.appendChild(img); resolve(); }, 100); }); }); }
+        switchSlide(originalSlide); loading.style.display = 'none'; post.style.display = 'block'; closeBtn.style.display = 'block';
+    }
+    function closeMockup() { document.getElementById('mockupModal').classList.remove('active'); }
+</script>
+</body>
+</html>
