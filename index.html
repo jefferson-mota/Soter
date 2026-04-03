@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soter Feed Studio v16.4 (Rock Solid)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- MÁGICA DA NUVEM: SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,6 +75,12 @@
         .align-group { display: flex; gap: 5px; width: 100%;}
         .align-btn { flex: 1; padding: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; font-size: 12px; text-align: center;}
         .align-btn.active { background: var(--primary-bg); color: #fff; border-color: var(--primary-bg); }
+
+        .format-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 5px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 8px; transition: 0.2s; color: #555; text-align: left; line-height: 1.2; overflow: hidden;}
+        .format-btn:hover { background: #f0f2f5; }
+        .format-btn.active { background: var(--primary-bg); color: #fff; border-color: var(--primary-bg); box-shadow: inset 0 0 5px rgba(0,0,0,0.3); }
+        .format-btn span { font-size: 14px; font-weight: bold; }
+        .format-btn small { font-size: 10px; font-weight: normal; opacity: 0.8; display: block; margin-top: 2px;}
 
         .palette-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #eee; width: 100%; }
         .palette-color { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; position:relative; }
@@ -230,14 +239,45 @@
                 <span class="label-pequena">Formato da Arte</span>
                 <p style="font-size: 12px; color: #666; margin-top: 0;">Isso mudará o formato de todos os cards e ajustará os textos automaticamente.</p>
                 <div class="control-group">
-                    <select id="layoutFormat" onchange="applyGlobalFormat(this.value)" style="font-size: 14px; font-weight: bold; padding: 12px;">
-                        <option value="3:4">Post Feed Padrão (1080 x 1440)</option>
-                        <option value="9:16">Stories / Reels (1080 x 1920)</option>
-                    </select>
+                    <input type="hidden" id="layoutFormat" value="3:4">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button type="button" id="fmt_3:4" class="format-btn active" onclick="applyGlobalFormat('3:4')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2" ry="2"></rect></svg>
+                            <span>3:4<small>1080 x 1440</small></span>
+                        </button>
+                        <button type="button" id="fmt_1:1" class="format-btn" onclick="applyGlobalFormat('1:1')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect></svg>
+                            <span>1:1<small>1080 x 1080</small></span>
+                        </button>
+                        <button type="button" id="fmt_9:16" class="format-btn" onclick="applyGlobalFormat('9:16')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"></rect></svg>
+                            <span>9:16<small>1080 x 1920</small></span>
+                        </button>
+                        <button type="button" id="fmt_16:9" class="format-btn" onclick="applyGlobalFormat('16:9')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect></svg>
+                            <span>16:9<small>1080 x 608</small></span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div id="tab-project" class="panel">
+
+                <!-- NOVO PAINEL SOTER CLOUD -->
+                <div class="control-group" style="border-left: 3px solid #6a0dad; background: #fafafa; margin-bottom: 15px;">
+                    <span class="label-pequena" style="color: #6a0dad;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Soter Cloud Studio
+                    </span>
+                    <div id="auth-section" style="font-size: 11px; color: #666;">Conectando...</div>
+                    <div id="cloud-actions" style="display:none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <div style="display: flex; gap: 5px;">
+                            <button class="btn-file" style="flex:1; background: #6a0dad; font-size:11px;" onclick="saveToCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg> Salvar Nuvem</button>
+                            <button class="btn-file" style="flex:1; background: #333; font-size:11px;" onclick="loadFromCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir Nuvem</button>
+                        </div>
+                        <div id="cloudProjectsList" style="display:none; margin-top: 5px; max-height: 200px; overflow-y: auto; background: #fff; padding: 5px; border-radius: 6px; border: 1px solid #ddd;"></div>
+                    </div>
+                </div>
+
                 <div class="control-group" style="border-left: 3px solid #d9534f; background: #fffcfc;">
                     <span class="label-pequena" style="color: #d9534f;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Auto-Gerar (Extrair Matéria)</span>
                     <input type="text" id="newsLink" placeholder="Cole o link da matéria aqui...">
@@ -262,6 +302,23 @@
                     <button class="btn-file" onclick="downloadCurrent()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Baixar Slide Atual</button>
                     <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg> Baixar Todos (Carrossel)</button>
                     <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Exportar Pacote Completo (ZIP)</button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                
+                <span class="label-pequena" style="text-align: center; margin-bottom: 8px;">Sobre o Soter</span>
+                <div style="background: #f0f2f5; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e1e4e8;">
+                    <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: bold; color: #333;">Desenvolvido por Jeff Mota</p>
+                    <p style="color: #464646; text-decoration: none; font-weight: bold; font-size: 11px;">v.16.8.2026 - ©Todos os direitos reservados</p>
+                    <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <a href="https://instagram.com/jeffmota.design" target="_blank" style="color: #da347a; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> @jeffmota.design
+                        </a>
+                        <a href="https://jeffmota.com.br" target="_blank" style="color: #005b9f; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> jeffmota.com.br
+                        </a>
+                        
+                    </div>
                 </div>
             </div>
 
@@ -573,6 +630,109 @@
 <script>
     const canvas = document.getElementById('feedCanvas');
     const ctx = canvas.getContext('2d');
+
+    // --- MOTOR SUPABASE & AUTENTICAÇÃO ---
+    const SUPABASE_URL = 'https://qxvqxsvhbmpaxblgqmav.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_b-ulHsFxP6CROqk5jHHwXQ_a6l2ayCw';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+
+    // Escuta mudanças de Login/Logout em tempo real
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        currentUser = session?.user || null;
+        renderAuthUI();
+    });
+
+    async function loginGoogle() { await supabaseClient.auth.signInWithOAuth({ provider: 'google' }); }
+    async function logoutGoogle() { await supabaseClient.auth.signOut(); }
+
+    function renderAuthUI() {
+        const authDiv = document.getElementById('auth-section');
+        const cloudActions = document.getElementById('cloud-actions');
+        if(!authDiv) return;
+
+        if(currentUser) {
+            const avatar = currentUser.user_metadata.avatar_url;
+            const name = currentUser.user_metadata.full_name;
+            authDiv.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; background:#fff; padding:8px; border-radius:8px; border:1px solid #eee;">
+                    <img src="${avatar}" style="width:36px; height:36px; border-radius:50%; border:2px solid #6a0dad; padding: 2px;">
+                    <div style="flex:1;">
+                        <div style="font-size:12px; font-weight:bold; color:#333;">${name}</div>
+                        <div style="font-size:10px; color:#d9534f; cursor:pointer; font-weight:bold; margin-top:2px;" onclick="logoutGoogle()">Sair / Desconectar</div>
+                    </div>
+                </div>`;
+            cloudActions.style.display = 'flex';
+        } else {
+            authDiv.innerHTML = `
+                <button class="btn-file" style="background:#fff; color:#333; border:1px solid #ccc; width:100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" onclick="loginGoogle()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg> Entrar com Google
+                </button>`;
+            cloudActions.style.display = 'none';
+        }
+    }
+
+    async function saveToCloud() {
+        if(!currentUser) return;
+        let currentName = document.getElementById('pNameText').innerText;
+        let pName = prompt("Salvar projeto na nuvem como:", currentName === 'Sem_titulo' ? 'Meu Novo Projeto' : currentName);
+        if(!pName) return;
+        
+        updateCurrentSlideState();
+        document.getElementById('pNameText').innerText = pName;
+        triggerGlobalToast("⏳ Enviando para a nuvem...");
+        
+        // Empacota todos os slides e salva no Supabase
+        const { error } = await supabaseClient.from('projetos_soter').insert([
+            { user_id: currentUser.id, project_name: pName, project_data: JSON.parse(JSON.stringify(slides)) }
+        ]);
+        
+        if(error) alert("Erro ao salvar: " + error.message);
+        else triggerGlobalToast("☁️ Salvo com Sucesso!");
+    }
+
+    async function loadFromCloud() {
+        if(!currentUser) return;
+        const resDiv = document.getElementById('cloudProjectsList');
+        resDiv.innerHTML = '<div style="text-align:center; padding:10px; font-size:11px; color:#666;">Buscando seus projetos... ⏳</div>';
+        resDiv.style.display = 'block';
+        
+        // Puxa do banco apenas os projetos de quem está logado
+        const { data, error } = await supabaseClient.from('projetos_soter').select('id, project_name, created_at').order('created_at', { ascending: false });
+        
+        if(error) { resDiv.innerHTML = '<div style="color:red; font-size:11px; padding:5px;">Erro ao buscar dados.</div>'; return; }
+        if(data.length === 0) { resDiv.innerHTML = '<div style="color:#666; font-size:11px; padding:5px;">Nenhum projeto encontrado.</div>'; return; }
+        
+        resDiv.innerHTML = '';
+        data.forEach(p => {
+            let div = document.createElement('div');
+            let dateStr = new Date(p.created_at).toLocaleDateString('pt-BR');
+            div.style = "padding: 10px; border-bottom: 1px solid #eee; cursor:pointer; font-size:12px; display:flex; justify-content:space-between; align-items:center; transition: 0.2s;";
+            div.onmouseover = () => div.style.backgroundColor = '#f9f9f9';
+            div.onmouseout = () => div.style.backgroundColor = 'transparent';
+            div.innerHTML = `<strong>${p.project_name}</strong> <span style="font-size:10px; color:#999;">${dateStr}</span>`;
+            
+            div.onclick = async () => {
+                resDiv.innerHTML = '<div style="text-align:center; padding:10px; font-size:11px; color:#6a0dad; font-weight:bold;">Baixando e Restaurando... ⏳</div>';
+                const { data: pData } = await supabaseClient.from('projetos_soter').select('project_data').eq('id', p.id).single();
+                if(pData) {
+                    document.getElementById('pNameText').innerText = p.project_name;
+                    processLoadedData(JSON.stringify(pData.project_data)); // Usa nosso motor nativo para ler o JSON
+                    resDiv.style.display = 'none';
+                    triggerGlobalToast("☁️ Projeto Restaurado!");
+                }
+            };
+            resDiv.appendChild(div);
+        });
+        
+        let cancelBtn = document.createElement('button');
+        cancelBtn.innerText = "✖ Fechar Lista";
+        cancelBtn.className = "btn-file";
+        cancelBtn.style = "width:100%; background:#fff; color:#d9534f; border: 1px solid #d9534f; padding:8px; font-size:11px; margin-top:8px;";
+        cancelBtn.onclick = () => resDiv.style.display = 'none';
+        resDiv.appendChild(cancelBtn);
+    }
     
     let bgImage = new Image(); bgImage.crossOrigin = "anonymous";
     let bgTemplateImg = new Image(); bgTemplateImg.crossOrigin = "anonymous";
@@ -1227,30 +1387,38 @@ function injectSVGs() {
     let isProgrammaticUpdate = false; 
 
     function applyGlobalFormat(val) {
-        let oldFormat = slides[currentSlide].layoutFormat || '3:4';
-        if (oldFormat === val) return;
+        let oldFormat = slides[currentSlide].layoutFormat || '3:4'; 
+        if (oldFormat === val) return; 
+        forceSaveHistory(); 
         
-        forceSaveHistory();
+        // Atualiza a memória oculta e acende o botão clicado
         document.getElementById('layoutFormat').value = val;
-        let ratio = val === '9:16' ? (1920 / 1440) : (1440 / 1920);
+        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+        let activeBtn = document.getElementById('fmt_' + val);
+        if(activeBtn) activeBtn.classList.add('active');
         
-        slides.forEach(s => {
-            s.layoutFormat = val;
-            if (s.tPosY) s.tPosY = Math.round(s.tPosY * ratio);
-            if (s.logoPosY) s.logoPosY = Math.round(s.logoPosY * ratio);
+        // Pega as alturas para calcular a proporção exata da mudança
+        const getH = (f) => f === '9:16' ? 1920 : (f === '1:1' ? 1080 : (f === '16:9' ? 608 : 1440));
+        let ratio = getH(val) / getH(oldFormat);
+        
+        // Ajusta a posição Y de todos os textos e logos do carrossel
+        slides.forEach(s => { 
+            s.layoutFormat = val; 
+            if (s.tPosY) s.tPosY = Math.round(s.tPosY * ratio); 
+            if (s.logoPosY) s.logoPosY = Math.round(s.logoPosY * ratio); 
         });
         
-        let currentY = Math.round(document.getElementById('tPosY').value * ratio);
-        document.getElementById('tPosY').value = currentY;
+        let currentY = Math.round(document.getElementById('tPosY').value * ratio); 
+        document.getElementById('tPosY').value = currentY; 
         document.getElementById('numTPosY').value = currentY;
-
-        let currentLogoY = Math.round(document.getElementById('logoPosY').value * ratio);
-        document.getElementById('logoPosY').value = currentLogoY;
+        
+        let currentLogoY = Math.round(document.getElementById('logoPosY').value * ratio); 
+        document.getElementById('logoPosY').value = currentLogoY; 
         document.getElementById('numLogoPosY').value = currentLogoY;
-
-        canvas.style.aspectRatio = val === '9:16' ? '9/16' : '3/4';
-        updateCurrentSlideState();
-        generatePreview();
+        
+        let aspStr = val === '9:16' ? '9/16' : (val === '1:1' ? '1/1' : (val === '16:9' ? '16/9' : '3/4'));
+        canvas.style.aspectRatio = aspStr; 
+        updateCurrentSlideState(); generatePreview();
     }
 
     function applyGlobalFooter() {
@@ -1400,6 +1568,12 @@ function injectSVGs() {
             }
         });
         
+        // Acende o botão visual do formato correto do slide atual
+        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+        let activeFmt = state.layoutFormat || '3:4';
+        let fmtBtn = document.getElementById('fmt_' + activeFmt);
+        if(fmtBtn) fmtBtn.classList.add('active');
+
         toggleEffectControls();
 
         ['zoom','posX','posY','gradSolid','gradFade','gradOpac','tPosY', 'logoSize', 'logoPosX', 'logoPosY', 'logoOpacity', 'effectIntensity', 'duotoneContrast'].forEach(id => {
@@ -1696,31 +1870,24 @@ function injectSVGs() {
         if(document.getElementById('alignCenter').classList.contains('active')) align = 'center';
         if(document.getElementById('alignRight').classList.contains('active')) align = 'right';
 
-        let formatVal = document.getElementById('layoutFormat').value || '3:4';
-        let cH = formatVal === '9:16' ? 1920 : 1440;
-        canvas.height = cH;
-        canvas.style.aspectRatio = formatVal === '9:16' ? '9/16' : '3/4';
+        let formatVal = document.getElementById('layoutFormat').value || '3:4'; 
+        let cH = formatVal === '9:16' ? 1920 : (formatVal === '1:1' ? 1080 : (formatVal === '16:9' ? 608 : 1440));
+        let aspStr = formatVal === '9:16' ? '9/16' : (formatVal === '1:1' ? '1/1' : (formatVal === '16:9' ? '16/9' : '3/4'));
 
+        canvas.height = cH; 
+        canvas.style.aspectRatio = aspStr;
         canvas.style.cursor = (!isSolid && bgImage.src && bgImage.naturalWidth !== 0) ? (isDragging ? 'grabbing' : 'grab') : 'default';
+        
+        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, 1080, cH);
 
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, 1080, cH);
-
-        // -- LÓGICA DO PAPEL POLAROID FULLSCREEN --
-        let fStyle = document.getElementById('frameStyle').value;
-        let isPolaroid = (fStyle === 'polaroid');
+        let fStyle = document.getElementById('frameStyle').value; let isPolaroid = (fStyle === 'polaroid');
         let photoPad = 50; 
-        let photoBottomMargin = 300;
+        // Polaroid inteligente: Diminui a borda inferior se a arte for muito achatada
+        let photoBottomMargin = formatVal === '16:9' ? 120 : (formatVal === '1:1' ? 220 : 300);
 
         if (isPolaroid) {
-            ctx.fillStyle = '#FAFAFA'; // Cor do papel polaroid
-            ctx.fillRect(0, 0, 1080, cH);
-            
-            // Máscara para a foto não invadir as margens brancas
-            ctx.save(); 
-            ctx.beginPath();
-            ctx.rect(photoPad, photoPad, 1080 - (photoPad*2), cH - photoBottomMargin - photoPad);
-            ctx.clip();
+            ctx.fillStyle = '#FAFAFA'; ctx.fillRect(0, 0, 1080, cH);
+            ctx.save(); ctx.beginPath(); ctx.rect(photoPad, photoPad, 1080 - (photoPad*2), cH - photoBottomMargin - photoPad); ctx.clip();
         }
 
         if (bgTemplateImg.src && bgTemplateImg.naturalWidth !== 0) {
@@ -2365,7 +2532,8 @@ function injectSVGs() {
         updateCurrentSlideState();
         const modal = document.getElementById('mockupModal'); const carousel = document.getElementById('igCarousel'); const loading = document.getElementById('mockupLoading'); const post = document.getElementById('igPost'); const closeBtn = document.getElementById('closeMockupBtn');
         modal.classList.add('active'); post.style.display = 'none'; closeBtn.style.display = 'none'; loading.style.display = 'flex'; carousel.innerHTML = ''; carousel.scrollLeft = 0;
-        let format = document.getElementById('layoutFormat').value || '3:4'; document.getElementById('igCarouselContainer').style.aspectRatio = format === '9:16' ? '9/16' : '3/4';
+        let format = document.getElementById('layoutFormat').value || '3:4'; 
+        document.getElementById('igCarouselContainer').style.aspectRatio = format === '9:16' ? '9/16' : (format === '1:1' ? '1/1' : (format === '16:9' ? '16/9' : '3/4'));
         let originalSlide = currentSlide;
         
         for(let i = 0; i < slides.length; i++) {
@@ -2375,7 +2543,7 @@ function injectSVGs() {
         switchSlide(originalSlide); loading.style.display = 'none'; post.style.display = 'block'; closeBtn.style.display = 'block';
     }
     function closeMockup() { document.getElementById('mockupModal').classList.remove('active'); }
-    
+
     // --- GESTO INTELIGENTE: SWIPE PARA TROCAR PÁGINAS (MOBILE) ---
     const cWrapper = document.querySelector('.canvas-wrapper');
     let swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
