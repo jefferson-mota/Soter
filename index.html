@@ -12,7 +12,7 @@
     
     <style>
         :root { --primary-bg: #001a33; --accent-green: #76ce3f; --bg-app: #f0f2f5; --file-blue: #005b9f; --file-blue-hover: #00447a; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: var(--bg-app); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: var(--bg-app); display: flex; flex-direction: column; height: 100vh; height: 100dvh; width: 100%; top: 0; left: 0; position: fixed; overflow: hidden; }
         *, *::before, *::after { box-sizing: border-box; }
 
         .sheet-handle { display: none; }
@@ -148,31 +148,25 @@
             .panel-container { flex: 1; overflow-y: auto; height: 100vh;}
         }
         /* --- NOVO MOTOR MOBILE --- */
-        @media (max-width: 767px) { 
-            /* A arte ocupa a tela toda no fundo */
-            .preview-pane { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 1; padding: 20px 60px 80px 20px; }
+        @media (max-width: 767px) {
+            .app-container { display: block; }
+            .preview-pane { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 60px 60px 100px 20px; z-index: 1; }
             
-            /* Gaveta de Controles na Base */
-            .controls-pane { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; max-height: 80vh; background: transparent; z-index: 20; display: flex; flex-direction: column-reverse; pointer-events: none; }
+            /* A Gaveta (Fixada na base sem vazar da tela) */
+            .controls-pane { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; max-height: 85vh; background: transparent; z-index: 20; display: flex; flex-direction: column-reverse; pointer-events: none; }
+            .nav-bar { pointer-events: auto; border-radius: 20px 20px 0 0; padding-bottom: max(15px, env(safe-area-inset-bottom)); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); z-index: 30; flex-shrink: 0;}
             
-            /* A barra de ícones fica flutuando embaixo com bordas arredondadas */
-            .nav-bar { pointer-events: auto; border-radius: 20px 20px 0 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); }
-            
-            /* A área das ferramentas (quando aberta) */
-            .panel-container { pointer-events: auto; background: #f9f9f9; border-radius: 20px 20px 0 0; display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); max-height: 65vh;}
-            
-            .sheet-handle { display: block; width: 40px; height: 5px; background: #d1d5db; border-radius: 5px; margin: 15px auto 10px auto; flex-shrink: 0; }
-
-            /* Classe que o Javascript vai usar para abrir/fechar a gaveta */
-            .controls-pane.open .panel-container { display: block; animation: slideUp 0.3s ease-out; }
+            /* O miolo das opções */
+            .panel-container { pointer-events: auto; background: #f9f9f9; border-radius: 20px 20px 0 0; display: none; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); max-height: 65vh; padding-top: 10px; z-index: 25; flex-direction: column; overflow: hidden;}
+            .controls-pane.open .panel-container { display: flex; animation: slideUp 0.3s ease-out; }
             @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-            /* Carrossel Vertical na Lateral Direita */
+            
+            /* Alça (Drag Handle) e Carrossel */
+            .sheet-handle { display: block; width: 40px; height: 5px; background: #ccc; border-radius: 5px; margin: 0 auto 10px auto; flex-shrink: 0; }
+            .panel { padding: 10px 20px 20px 20px; flex: 1; overflow-y: auto; }
             .carousel-bar { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); flex-direction: column; background: rgba(0,0,0,0.6); padding: 10px 6px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; max-height: 60vh; overflow-y: auto;}
             .slide-btn { width: 28px; height: 28px; font-size: 11px; }
             .slide-btn.del { width: 24px; height: 24px; font-size: 9px; }
-            
-            /* Ajuste da Badge para não encostar nas bordas do celular */
             .project-title-badge { top: 15px; left: 15px; padding: 6px 12px; font-size: 10px; }
         }
     </style>
@@ -1465,15 +1459,16 @@
         document.getElementById(id).classList.add('active');
         if(btn) btn.classList.add('active');
         
-        // Mágica do Mobile: Avisa o CSS para "subir a gaveta"
-        document.querySelector('.controls-pane').classList.add('open');
+        // Mágica do Mobile: Abre a gaveta
+        let cp = document.querySelector('.controls-pane');
+        if(cp) cp.classList.add('open');
     }
 
     // Sensor: Fecha a gaveta ao tocar fora dela (na arte ou no fundo)
     document.querySelector('.preview-pane').addEventListener('click', function(e) {
-        // Se o toque foi na área da arte (canvas) ou no fundo escuro...
         if (e.target.closest('.canvas-wrapper') || e.target === this) {
-            document.querySelector('.controls-pane').classList.remove('open'); // ...recolhe a gaveta
+            let cp = document.querySelector('.controls-pane');
+            if(cp) cp.classList.remove('open');
         }
     });
 
@@ -2289,26 +2284,28 @@
     const sheetHandle = document.getElementById('sheetHandle');
     const mPanel = document.getElementById('mobilePanelContainer');
     let startY, startH;
+    
+    if(sheetHandle) {
+        sheetHandle.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            startH = mPanel.getBoundingClientRect().height;
+            mPanel.style.transition = 'none'; // Segue o dedo sem delay
+        }, {passive: true});
 
-    sheetHandle.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        startH = mPanel.getBoundingClientRect().height;
-        mPanel.style.transition = 'none'; // Tira animação para seguir o dedo sem lag
-    }, {passive: true});
+        sheetHandle.addEventListener('touchmove', (e) => {
+            let deltaY = startY - e.touches[0].clientY;
+            let newHeight = startH + deltaY;
+            // Limita a expansão entre 20% e 85% da tela
+            if(newHeight > window.innerHeight * 0.2 && newHeight < window.innerHeight * 0.85) {
+                mPanel.style.maxHeight = newHeight + 'px';
+                mPanel.style.height = newHeight + 'px';
+            }
+        }, {passive: true});
 
-    sheetHandle.addEventListener('touchmove', (e) => {
-        let deltaY = startY - e.touches[0].clientY;
-        let newHeight = startH + deltaY;
-        // Limita a altura da gaveta entre 20% e 85% da tela
-        if(newHeight > window.innerHeight * 0.2 && newHeight < window.innerHeight * 0.85) {
-            mPanel.style.maxHeight = newHeight + 'px';
-            mPanel.style.height = newHeight + 'px';
-        }
-    }, {passive: true});
-
-    sheetHandle.addEventListener('touchend', () => {
-        mPanel.style.transition = '0.3s ease-out'; // Devolve a fluidez elástica
-    });
+        sheetHandle.addEventListener('touchend', () => {
+            mPanel.style.transition = '0.3s ease-out'; // Volta a ter animação suave
+        });
+    }
 
     async function openMockup() {
         if(slides.length === 0) return;
