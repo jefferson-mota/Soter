@@ -636,6 +636,9 @@
     const SUPABASE_KEY = 'sb_publishable_b-ulHsFxP6CROqk5jHHwXQ_a6l2ayCw';
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentCloudProjectId = null; // Guarda o ID se estivermos na nuvem
+    let hasUnsavedChanges = false;    // Controla a bolinha do título
+    let cloudAutosaveTimer = null;    // O cronômetro dos 5 segundos
     let currentUser = null;
 
     // Escuta mudanças de Login/Logout em tempo real
@@ -678,23 +681,41 @@
         }
     }
 
-    async function saveToCloud() {
+    async function saveToCloud(isUpdate = false, isSilent = false) {
         if(!currentUser) return;
-        let currentName = document.getElementById('pNameText').innerText;
-        let pName = prompt("Salvar projeto na nuvem como:", currentName === 'Sem_titulo' ? 'Meu Novo Projeto' : currentName);
-        if(!pName) return;
+        let pNameUI = document.getElementById('pNameText');
+        let cleanName = pNameUI.innerText.replace(' •', ''); // Tira a bolinha pra salvar o nome limpo
+
+        let pName = cleanName;
+        // Só pede o nome se NÃO for uma atualização ou se o ID estiver vazio
+        if (!isUpdate && !currentCloudProjectId) {
+            pName = prompt("Salvar projeto na nuvem como:", cleanName === 'Sem_titulo' ? 'Meu Novo Projeto' : cleanName);
+            if(!pName) return;
+        }
+
+        if (!isSilent) triggerGlobalToast("⏳ Salvando na nuvem...");
+
+        let payload = { user_id: currentUser.id, project_name: pName, project_data: JSON.parse(JSON.stringify(slides)), updated_at: new Date().toISOString() };
+        let error;
+
+        if (currentCloudProjectId) {
+            // ATUALIZA o projeto existente (Acaba com a clonagem!)
+            const res = await supabaseClient.from('projetos_soter').update(payload).eq('id', currentCloudProjectId);
+            error = res.error;
+        } else {
+            // CRIA um novo e guarda o ID dele na memória
+            const res = await supabaseClient.from('projetos_soter').insert([payload]).select();
+            error = res.error;
+            if (res.data && res.data.length > 0) currentCloudProjectId = res.data[0].id;
+        }
         
-        updateCurrentSlideState();
-        document.getElementById('pNameText').innerText = pName;
-        triggerGlobalToast("⏳ Enviando para a nuvem...");
-        
-        // Empacota todos os slides e salva no Supabase
-        const { error } = await supabaseClient.from('projetos_soter').insert([
-            { user_id: currentUser.id, project_name: pName, project_data: JSON.parse(JSON.stringify(slides)) }
-        ]);
-        
-        if(error) alert("Erro ao salvar: " + error.message);
-        else triggerGlobalToast("☁️ Salvo com Sucesso!");
+        if(error) {
+            if (!isSilent) alert("Erro ao salvar: " + error.message);
+        } else {
+            hasUnsavedChanges = false;
+            pNameUI.innerText = pName; // Atualiza a tela (Apaga a bolinha)
+            triggerGlobalToast(isSilent ? "☁️ Salvo automaticamente" : "☁️ Salvo com Sucesso!");
+        }
     }
 
     async function loadFromCloud() {
@@ -703,40 +724,63 @@
         resDiv.innerHTML = '<div style="text-align:center; padding:10px; font-size:11px; color:#666;">Buscando seus projetos... ⏳</div>';
         resDiv.style.display = 'block';
         
-        // Puxa do banco apenas os projetos de quem está logado
-        const { data, error } = await supabaseClient.from('projetos_soter').select('id, project_name, created_at').order('created_at', { ascending: false });
+        // Puxa do banco ordenando pelo mais recente atualizado
+        const { data, error } = await supabaseClient.from('projetos_soter').select('id, project_name, created_at, updated_at').order('updated_at', { ascending: false });
         
-        if(error) { resDiv.innerHTML = '<div style="color:red; font-size:11px; padding:5px;">Erro ao buscar dados.</div>'; return; }
+        if(error) { resDiv.innerHTML = '<div style="color:red; font-size:11px; padding:5px;">Erro ao buscar.</div>'; return; }
         if(data.length === 0) { resDiv.innerHTML = '<div style="color:#666; font-size:11px; padding:5px;">Nenhum projeto encontrado.</div>'; return; }
         
         resDiv.innerHTML = '';
         data.forEach(p => {
             let div = document.createElement('div');
-            let dateStr = new Date(p.created_at).toLocaleDateString('pt-BR');
-            div.style = "padding: 10px; border-bottom: 1px solid #eee; cursor:pointer; font-size:12px; display:flex; justify-content:space-between; align-items:center; transition: 0.2s;";
+            div.style = "padding: 10px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center; transition: 0.2s;";
             div.onmouseover = () => div.style.backgroundColor = '#f9f9f9';
             div.onmouseout = () => div.style.backgroundColor = 'transparent';
-            div.innerHTML = `<strong>${p.project_name}</strong> <span style="font-size:10px; color:#999;">${dateStr}</span>`;
             
-            div.onclick = async () => {
+            // Formatando as datas
+            let cDate = new Date(p.created_at).toLocaleDateString('pt-BR');
+            let uDate = new Date(p.updated_at || p.created_at).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            
+            // Área Clicável (Abre o projeto)
+            let infoDiv = document.createElement('div');
+            infoDiv.style = "cursor:pointer; flex:1;";
+            infoDiv.innerHTML = `<strong>${p.project_name}</strong><br><span style="font-size:9px; color:#999;">Criado: ${cDate} | Modificado: ${uDate}</span>`;
+            
+            infoDiv.onclick = async () => {
                 resDiv.innerHTML = '<div style="text-align:center; padding:10px; font-size:11px; color:#6a0dad; font-weight:bold;">Baixando e Restaurando... ⏳</div>';
                 const { data: pData } = await supabaseClient.from('projetos_soter').select('project_data').eq('id', p.id).single();
                 if(pData) {
+                    currentCloudProjectId = p.id; // Guarda a ID para o auto-save funcionar!
+                    hasUnsavedChanges = false;
                     document.getElementById('pNameText').innerText = p.project_name;
-                    processLoadedData(JSON.stringify(pData.project_data)); // Usa nosso motor nativo para ler o JSON
+                    processLoadedData(JSON.stringify(pData.project_data));
                     resDiv.style.display = 'none';
                     triggerGlobalToast("☁️ Projeto Restaurado!");
                 }
             };
+            
+            // O Botão da Lixeira
+            let delBtn = document.createElement('button');
+            delBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+            delBtn.style = "background:transparent; border:none; color:#d9534f; cursor:pointer; padding:5px; flex-shrink:0; opacity: 0.7;";
+            delBtn.onmouseover = () => delBtn.style.opacity = '1';
+            delBtn.onmouseout = () => delBtn.style.opacity = '0.7';
+            
+            delBtn.onclick = async (e) => {
+                e.stopPropagation(); // Impede de abrir o projeto ao clicar na lixeira
+                if(confirm("Excluir definitivamente o projeto '" + p.project_name + "' da nuvem?")) {
+                    await supabaseClient.from('projetos_soter').delete().eq('id', p.id);
+                    if(currentCloudProjectId === p.id) { currentCloudProjectId = null; document.getElementById('pNameText').innerText = "Sem_titulo"; } // Desloga do projeto atual se apagar ele
+                    loadFromCloud(); // Recarrega a lista
+                }
+            };
+            
+            div.appendChild(infoDiv);
+            div.appendChild(delBtn);
             resDiv.appendChild(div);
         });
         
-        let cancelBtn = document.createElement('button');
-        cancelBtn.innerText = "✖ Fechar Lista";
-        cancelBtn.className = "btn-file";
-        cancelBtn.style = "width:100%; background:#fff; color:#d9534f; border: 1px solid #d9534f; padding:8px; font-size:11px; margin-top:8px;";
-        cancelBtn.onclick = () => resDiv.style.display = 'none';
-        resDiv.appendChild(cancelBtn);
+        let cancelBtn = document.createElement('button'); cancelBtn.innerText = "✖ Fechar Lista"; cancelBtn.className = "btn-file"; cancelBtn.style = "width:100%; background:#fff; color:#d9534f; border: 1px solid #d9534f; padding:8px; font-size:11px; margin-top:8px;"; cancelBtn.onclick = () => resDiv.style.display = 'none'; resDiv.appendChild(cancelBtn);
     }
     
     let bgImage = new Image(); bgImage.crossOrigin = "anonymous";
@@ -1377,12 +1421,25 @@ function injectSVGs() {
     let fileHandle = null;
 
     window.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject(); }
+        // Mágica do Ctrl+S (ou Cmd+S no Mac): Define se salva na nuvem ou no PC local
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { 
+            e.preventDefault(); 
+            if (currentCloudProjectId) {
+                saveToCloud(true, false); // Força um update na nuvem com aviso visual
+            } else {
+                saveProject(); // O velho salvar local (.json)
+            }
+        }
+        
+        // Atalhos de Desfazer/Refazer (mantidos intactos com a sua lógica de Mac e Shift!)
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { 
             e.preventDefault(); 
             if (e.shiftKey) redo(); else undo(); 
         }
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { 
+            e.preventDefault(); 
+            redo(); 
+        }
     });
 
     const UI_FIELDS = ['layoutFormat', 'solidBgToggle', 'zoom', 'posX', 'posY', 'flipXToggle', 'flipYToggle', 'gradColor', 'gradDir', 'gradSolid', 'gradFade', 'gradOpac', 'quoteToggle', 'useWebFonts', 'fontFamily', 'tPosY', 'tPosX', 'liveToggle', 'tagToggle', 'tagBleedToggle', 'mTag', 'cTag', 'cTagText', 'cBg', 'useCustomFooterToggle', 'customFooterBehavior', 'customTextColorToggle', 'cTitle', 'cDesc', 'logoPos', 'logoSize', 'logoPosX', 'logoPosY', 'logoOpacity', 'frameStyle', 'footerIcon', 'footerText', 'footerDate', 'imgEffect', 'effectIntensity', 'duotoneDark', 'duotoneLight', 'duotoneContrast'];
@@ -1478,10 +1535,26 @@ function injectSVGs() {
         return state;
     }
 
-    function updateCurrentSlideState() {
-        if(isProgrammaticUpdate || slides.length === 0) return;
-        slides[currentSlide] = getFormState();
-        if(!isUndoRedo) { clearTimeout(historyTimeout); historyTimeout = setTimeout(saveHistory, 600); }
+    function updateCurrentSlideState() { 
+        if(isProgrammaticUpdate || slides.length === 0) return; 
+        slides[currentSlide] = getFormState(); 
+        
+        // Cinto de segurança local
+        localStorage.setItem('soter_autosave', JSON.stringify(slides));
+        
+        // Mágica da Nuvem: Adiciona a bolinha e agenda o Auto-Save
+        if (currentUser && currentCloudProjectId) {
+            hasUnsavedChanges = true;
+            let pNameUI = document.getElementById('pNameText');
+            if (!pNameUI.innerText.endsWith(' •')) pNameUI.innerText += ' •'; // Acende a bolinha discreta
+            
+            clearTimeout(cloudAutosaveTimer);
+            cloudAutosaveTimer = setTimeout(() => {
+                saveToCloud(true, true); // (isUpdate=true, isSilent=true) -> Roda o auto-save aos 5s!
+            }, 5000);
+        }
+
+        if(!isUndoRedo) { clearTimeout(historyTimeout); historyTimeout = setTimeout(saveHistory, 600); } 
     }
 
     function renderCarouselBar() {
