@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soter Feed Studio v16.4 (Rock Solid)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- MÁGICA DA NUVEM: SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -32,7 +33,7 @@
         canvas { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background: #000; cursor: grab; transition: aspect-ratio 0.4s ease-in-out; }
         canvas:active { cursor: grabbing; }
 
-        .carousel-bar { display: flex; gap: 8px; background: rgba(255,255,255,0.1); padding: 6px 15px; border-radius: 50px; backdrop-filter: blur(5px); overflow-x: auto; overflow-y: hidden; max-width: 100%; align-items: center; min-height: 44px; box-sizing: border-box; margin-bottom: 5px;}
+        /*.carousel-bar { display: flex; gap: 8px; background: rgba(255,255,255,0.1); padding: 6px 15px; border-radius: 50px; backdrop-filter: blur(5px); overflow-x: auto; overflow-y: hidden; max-width: 100%; align-items: center; min-height: 44px; box-sizing: border-box; margin-bottom: 5px;}*/
         .carousel-bar::-webkit-scrollbar { display: none; }
         
         .slide-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff; color: #333; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; flex-shrink: 0;}
@@ -42,7 +43,7 @@
         .slide-btn.drag-over { transform: scale(1.2); border: 2px dashed var(--accent-green); opacity: 0.8; }
         .slide-btn.add { background: transparent; border: 2px dashed rgba(255,255,255,0.5); color: #fff;}
         .slide-btn.add:hover { border-color: #fff; background: rgba(255,255,255,0.2);}
-        .slide-btn.del { width: 28px; height: 28px; background: #d9534f; color: white; font-size: 10px; margin-left: 5px;}
+        .slide-btn.del { width: 32px; height: 32px; background: #d9534f; color: white; font-size: 10px; margin-left: 5px;}
         .slide-btn.aux-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 16px;}
         .slide-btn.aux-btn:hover:not(:disabled) { background: rgba(255,255,255,0.4); }
         .slide-btn.aux-btn:disabled { opacity: 0.3; cursor: not-allowed; border: none;}
@@ -175,458 +176,773 @@
             .sheet-handle { position: relative; width: 100%; height: 30px; background: transparent; margin: 0; flex-shrink: 0; cursor: grab; }
             .sheet-handle::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 5px; background: #ccc; border-radius: 5px; display: block; }
             .panel { padding: 10px 20px 20px 20px; flex: 1; overflow-y: auto; }
-            .carousel-bar { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); flex-direction: column; background: rgba(0,0,0,0.6); padding: 10px 6px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; max-height: 60vh; overflow-y: auto;}
+            /*.carousel-bar { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); flex-direction: column; background: rgba(0,0,0,0.6); padding: 10px 6px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; max-height: 60vh; overflow-y: auto;}*/
             .slide-btn { width: 28px; height: 28px; font-size: 11px; }
-            .slide-btn.del { width: 24px; height: 24px; font-size: 9px; }
+            .slide-btn.del { width: 30px; height: 30px; font-size: 9px; }
             .project-title-badge { top: 15px; left: 15px; padding: 6px 12px; font-size: 10px; }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     /* 🖼️ ESPAÇO DA IMAGEM NO TOPO */
+    .fake-canvas-img-wrapper {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 65%; /* Ocupa 65% do card */
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    .fake-canvas-img-wrapper img {
+        width: 100%; height: 100%;
+        object-fit: cover; /* Garante que a imagem preencha sem distorcer */
+    }
+
+    /* 🎭 O GRADIENTE (IGUAL AO SEU EDITOR) */
+    .fake-canvas-mask {
+        position: absolute;
+        bottom: 0; left: 0; width: 100%; height: 100%;
+        /* Faz o fade do transparente (topo) para o azul escuro (base) */
+        background: linear-gradient(to top, #001a33 30%, transparent 80%);
+        z-index: 2;
+    }
+
+    .fake-canvas-header {
+        position: relative;
+        z-index: 4;
+        background: rgba(0, 26, 51, 0.5); /* Semi-transparente para ler sobre a foto */
+        backdrop-filter: blur(5px);
+    }
+
     </style>
 </head>
 <body>
 
-<div id="globalToast" class="global-toast">💾 Projeto Salvo!</div>
-
-<div id="mockupModal" class="mockup-modal">
-    <div id="mockupLoading" class="loading-mockup"><div class="spinner"></div>Gerando Preview...</div>
-    <div id="igPost" class="ig-post">
-        <div class="ig-header"><div class="ig-avatar"></div><div class="ig-username">seu.perfil</div><div class="ig-dots">...</div></div>
-        <div class="ig-carousel-container" id="igCarouselContainer"><div class="ig-carousel" id="igCarousel"></div></div>
-        <div class="ig-footer">
-            <div class="ig-icons">♡ 💬 ↗</div>
-            <div class="ig-likes">Curtido por 42 pessoas</div>
-            <div class="ig-caption"><span style="font-weight:600">seu.perfil</span> Deslize para o lado para ler a notícia completa. Acompanhe nossas ações oficiais! #Notícia</div>
-        </div>
-    </div>
-    <button class="close-mockup" id="closeMockupBtn" style="display:none;" onclick="closeMockup()">Fechar Preview</button>
-</div>
-
-<div class="app-container" id="app">
+<!-- 1. A VITRINE (A "Cortina" que cobre tudo) -->
+<div id="vitrineSoter" class="vitrine-layout">
     
-    <div class="preview-pane">
-        <div class="project-title-badge">
-            <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-            <span id="pNameText">Sem_titulo</span>
+    <!-- HEADER MOBILE (Aparece só no celular) -->
+    <header class="vitrine-header">
+        <div class="header-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#76ce3f" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            <span>Soter <b>Studio</b></span>
         </div>
-        <div class="canvas-wrapper"><canvas id="feedCanvas" width="1080" height="1440"></canvas></div>
-        <div class="carousel-bar" id="carouselBar"></div>
+        <button onclick="iniciarApp('google')" class="btn-login-mobile">Entrar</button>
+    </header>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <style>
+        /* Container Geral (Ocupa o máximo da direita) */
+        #right-vitrine-pane { flex: 1; background: #1a1a1a; display: flex; justify-content: center; align-items: center; border-left: 1px solid #333; }
+        
+        /* Container do Swiper (Define o formato 3:4 e o tamanho máximo) */
+        #soter-vitrine-swiper { width: 90%; height: 90%; max-width: 700px; max-height: 933px; padding-top: 50px; padding-bottom: 70px; }
+        
+        .swiper-wrapper { position: relative; }
+
+        /* 🎴 ESTILO GERAL DOS CARDS FAKE (EMULANDO O CANVAS) */
+        .swiper-slide {
+            background: #001a33; /* Cor base do editor */
+            border-radius: 12px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            width: auto; /* Deixa o swiper controlar a largura */
+            aspect-ratio: 3 / 4; /* Garante o formato 3:4 */
+        }
+        
+        /* Simulação do Canvas interno (Cabeçalho, Conteúdo, CTA, Rodapé) */
+        .fake-canvas-header { height: 50px; display: flex; align-items: center; padding: 0 20px; color: white; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        /*.fake-canvas-content { flex: 1; padding: 25px; display: flex; flex-direction: column; justify-content: center; text-align: left; }*/
+
+        /* 📝 AJUSTE DOS TEXTOS (Z-INDEX E POSIÇÃO) */
+        .fake-canvas-content {
+            position: relative;
+            z-index: 3; /* Fica por cima da imagem e da máscara */
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Empurra o texto para a base */
+            text-align: left;
+            padding-bottom: 40px;
+        }
+            
+        .fake-canvas-tag { width: fit-content; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; color: white; background: #76ce3f; margin-bottom: 12px; }
+        .fake-canvas-title { font-size: 26px; font-weight: bold; margin: 0 0 12px 0; line-height: 1.2; color: white; }
+        .fake-canvas-desc { font-size: 14px; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.5; }
+
+        /* O BOTÃO CTA CLICÁVEL DENTRO DO CARD (Ativo em todos os cards) */
+        .fake-canvas-cta { margin-top: 30px; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; color: #001a33; background: #76ce3f; transition: 0.2s; box-shadow: 0 4px 12px rgba(118,206,63,0.3); }
+        .fake-canvas-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(118,206,63,0.5); }
+        
+        .fake-canvas-footer { height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 15px; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 11px; font-weight: bold; }
+
+        /* 🔘 ESTILO DAS BOLHAS DE NAVEGAÇÃO E SETAS (EMULANDO O EDITOR REAL) */
+        .swiper-pagination-bullet { width: 30px; height: 30px; line-height: 30px; text-align: center; font-weight: bold; font-size: 12px; color: #333; opacity: 1; background: #fff; margin: 0 5px !important; transition: 0.3s; }
+        .swiper-pagination-bullet-active { background: #76ce3f; color: #fff; box-shadow: 0 4px 10px rgba(118,206,63,0.4); }
+        
+        /* Setas laterais simuladas na vitrine */
+        .soter-fake-prev, .soter-fake-next { position: absolute; top: 50%; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #76ce3f; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; transform: translateY(-50%); transition: 0.3s; }
+        .soter-fake-prev { left: 10px; } .soter-fake-next { right: 10px; }
+        .soter-fake-prev:hover, .soter-fake-next:hover { background: rgba(0,0,0,0.8); }
+
+        /* Animação COVERFLOW do Swiper (A mágica do 3D Netflix) */
+        .swiper-slide { opacity: 0.3; transition: 0.5s; }
+        .swiper-slide-active { opacity: 1; transform: scale(1) !important; z-index: 20; }
+        .swiper-slide-prev, .swiper-slide-next { opacity: 0.5; z-index: 10; }
+        
+
+
+
+   /* =========================================
+   BASE E MOBILE (Telas Pequenas)
+   ========================================= */
+.vitrine-layout {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999; background: #001a33;
+    display: flex; flex-direction: column; 
+    overflow: hidden; /* Trava a tela para o carrossel ficar perfeito no meio */
+}
+
+/* Header (Visível no Celular) */
+.vitrine-header {
+    height: 60px; background: #001a33; border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; flex-shrink: 0;
+}
+.header-logo { display: flex; align-items: center; gap: 8px; color: white; font-size: 18px; }
+.btn-login-mobile { background: #4285F4; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+
+/* Bloco 1: Textos (ESCONDIDO NO MOBILE 🔥) */
+.vitrine-text-block {
+    display: none; /* A mágica acontece aqui */
+}
+
+/* Bloco 2: Carrossel (Ocupando todo o espaço restante) */
+.vitrine-carousel-block { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; /* Centraliza na vertical */
+    flex: 1; /* Estica para preencher o fundo da tela até o header */
+    padding-bottom: 20px; 
+}
+#soter-vitrine-swiper { width: 85%; max-height: 80vh; aspect-ratio: 3/4; }
+
+
+/* =========================================
+   DESKTOP (Telas Maiores que 768px)
+   ========================================= */
+@media (min-width: 769px) {
+    .vitrine-layout {
+        flex-direction: row; /* Coloca Lado a Lado no PC */
+    }
+
+    .vitrine-header { display: none; } /* Some com o header no PC */
+
+    /* VOLTA A MOSTRAR OS TEXTOS NO PC 🟢 */
+    .vitrine-text-block {
+        display: flex; /* Ressuscita o bloco */
+        flex-direction: column;
+        flex: 0 0 40%; 
+        align-items: flex-start; text-align: left;
+        padding: 60px; justify-content: center;
+        color: white;
+    }
+    .vitrine-logo-icon { display: block; margin-bottom: 15px; } 
+    .vitrine-h2 { font-size: 36px; margin: 0 0 15px 0; }
+    .vitrine-h3 { font-size: 24px; margin-bottom: 10px; font-weight: normal; }
+    .vitrine-p { color: #a0aec0; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
+    
+    .vitrine-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; }
+    .btn-login-desktop { display: block !important; }
+
+    .vitrine-carousel-block {
+        flex: 1; 
+        background: #1a1a1a; border-left: 1px solid #333;
+        align-items: center; padding-bottom: 0;
+    }
+    #soter-vitrine-swiper { width: 80%; max-width: 600px; }
+}
+        
+    </style>
+
+    <!-- BLOCO 1: TEXTOS E BOTÕES (Esquerda no PC, Topo no Celular) -->
+    <div class="vitrine-text-block">
+        <svg class="vitrine-logo-icon" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#76ce3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <h2 class="vitrine-h2">Soter <span style="color: #76ce3f;">Studio</span></h2>
+        <h3 class="vitrine-h3">Crie carrosséis de alta conversão.</h3>
+        <p class="vitrine-p">O estúdio definitivo para o serviço público e criadores. Sem Photoshop, sem complicação.</p>
+        
+        <div class="vitrine-buttons">
+            <button onclick="iniciarApp('google')" class="btn-file btn-login-desktop" style="background: white; color: #333; font-weight: bold; padding: 16px; border-radius: 8px;">Acessar com Google</button>
+            <button onclick="iniciarApp('guest')" class="btn-file" style="background: transparent; color: white; border: 1px solid #76ce3f; font-weight: bold; padding: 16px; border-radius: 8px;">Começar sem login</button>
+        </div>
     </div>
 
-    <div class="controls-pane">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="toggleTab('tab-layout', this)">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Layout
-            </button>
-            <button class="nav-btn" onclick="toggleTab('tab-project', this)">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Arquivo
-            </button>
-            <button class="nav-btn active" onclick="toggleTab('tab-media', this)">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Mídias
-            </button>
-            <button class="nav-btn" onclick="toggleTab('tab-text', this)">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Textos
-            </button>
-            <button class="nav-btn" onclick="toggleTab('tab-design', this)">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Estilos
-            </button>
-            <button class="nav-btn btn-preview-desk" onclick="openMockup()">
-                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Preview
-            </button>
+    <div class="vitrine-carousel-block">
+        
+        <div class="swiper" id="soter-vitrine-swiper">
+            <div class="swiper-wrapper">
+                
+                <div class="swiper-slide">
+                    <!-- 🖼️ IMAGEM DE FUNDO (Espaço reservado) -->
+                    <div class="fake-canvas-img-wrapper">
+                        <!-- Substitua o SRC pela imagem que você quiser destacar -->
+                        <img src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Preview">
+                        <div class="fake-canvas-mask"></div>
+                    </div>
+
+                    <!-- CABEÇALHO -->
+                    <div class="fake-canvas-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#76ce3f" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span style="font-weight: bold;">Soter Studio</span>
+                    </div>
+
+                    <!-- CONTEÚDO (Agora empurrado para baixo pelo justify-content: flex-end) -->
+                    <div class="fake-canvas-content">
+                        <div class="fake-canvas-tag">Destaque</div>
+                        <h4 class="fake-canvas-title">Crie e Publique em Segundos.</h4>
+                        <p class="fake-canvas-desc">O estúdio definitivo para o serviço público.</p>
+                        <button onclick="iniciarApp('guest')" class="fake-canvas-cta">Começar Agora</button>
+                    </div>
+
+                    <div class="fake-canvas-footer">🌐 seusite.com.br</div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="fake-canvas-img-wrapper">
+                        <!-- Substitua o SRC pela imagem que você quiser destacar -->
+                        <img src="https://images.pexels.com/photos/7279313/pexels-photo-7279313.jpeg" alt="Preview">
+                        <div class="fake-canvas-mask"></div>
+                    </div>
+                    <div class="fake-canvas-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d9534f" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        <span style="font-weight: bold;">Soter Studio</span>
+                    </div>
+                    <div class="fake-canvas-content">
+                        <div class="fake-canvas-tag" style="background: #da347a;">Highlights</div>
+                        <h4 class="fake-canvas-title">Layouts 3:4, Pexels e Google Fonts.</h4>
+                        <p class="fake-canvas-desc">Recursos Profissionais Para Acelerar Seu Design.</p>
+                        <button onclick="iniciarApp('guest')" class="fake-canvas-cta">Testar Já</button>
+                    </div>
+                    <div class="fake-canvas-footer">🌐 seusite.com.br</div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="fake-canvas-img-wrapper">
+                        <!-- Substitua o SRC pela imagem que você quiser destacar -->
+                        <img src="https://images.pexels.com/photos/17706648/pexels-photo-17706648.jpeg" alt="Preview">
+                        <div class="fake-canvas-mask"></div>
+                    </div>
+                    <div class="fake-canvas-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b900" stroke-width="2"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        <span style="font-weight: bold;">Soter Studio</span>
+                    </div>
+                    <div class="fake-canvas-content">
+                        <div class="fake-canvas-tag" style="background: #f39c12;">Automação</div>
+                        <h4 class="fake-canvas-title">Importe Textos de Matérias Online.</h4>
+                        <p class="fake-canvas-desc">Transforme Notícias em Posts Públicos Facilmente.</p>
+                        <button onclick="iniciarApp('guest')" class="fake-canvas-cta">Autogerar Agora</button>
+                    </div>
+                    <div class="fake-canvas-footer">🌐 seusite.com.br</div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="fake-canvas-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#da347a" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span style="font-weight: bold;">Soter Studio</span>
+                    </div>
+                    <div class="fake-canvas-content">
+                        <div class="fake-canvas-tag" style="background: #6a0dad;">Praticidade</div>
+                        <h4 class="fake-canvas-title">Baixe Imagens ou PDFs Prontos.</h4>
+                        <p class="fake-canvas-desc">Formatação Impecável Pronta para Compartilhar.</p>
+                        <button onclick="iniciarApp('guest')" class="fake-canvas-cta">Exportar Já</button>
+                    </div>
+                    <div class="fake-canvas-footer">🌐 seusite.com.br</div>
+                </div>
+
+            </div>
+
+            <div class="swiper-pagination"></div>
+
+            <div class="soter-fake-prev">&#10094;</div>
+            <div class="soter-fake-next">&#10095;</div>
         </div>
 
-        <div class="panel-container" id="mobilePanelContainer">
-            <div class="sheet-handle" id="sheetHandle"></div>
-            <div id="tab-layout" class="panel">
-                <span class="label-pequena">Formato da Arte</span>
-                <p style="font-size: 12px; color: #666; margin-top: 0;">Isso mudará o formato de todos os cards e ajustará os textos automaticamente.</p>
-                <div class="control-group">
-                    <input type="hidden" id="layoutFormat" value="3:4">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button type="button" id="fmt_3:4" class="format-btn active" onclick="applyGlobalFormat('3:4')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2" ry="2"></rect></svg>
-                            <span>3:4<small>1080 x 1440</small></span>
-                        </button>
-                        <button type="button" id="fmt_1:1" class="format-btn" onclick="applyGlobalFormat('1:1')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect></svg>
-                            <span>1:1<small>1080 x 1080</small></span>
-                        </button>
-                        <button type="button" id="fmt_9:16" class="format-btn" onclick="applyGlobalFormat('9:16')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"></rect></svg>
-                            <span>9:16<small>1080 x 1920</small></span>
-                        </button>
-                        <button type="button" id="fmt_16:9" class="format-btn" onclick="applyGlobalFormat('16:9')">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect></svg>
-                            <span>16:9<small>1080 x 608</small></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-project" class="panel">
-
-                <!-- NOVO PAINEL SOTER CLOUD -->
-                <div class="control-group" style="border-left: 3px solid #6a0dad; background: #fafafa; margin-bottom: 15px;">
-                    <span class="label-pequena" style="color: #6a0dad;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Soter Cloud Studio
-                    </span>
-                    <div id="auth-section" style="font-size: 11px; color: #666;">Conectando...</div>
-                    <div id="cloud-actions" style="display:none; flex-direction: column; gap: 8px; margin-top: 10px;">
-                        <div style="display: flex; gap: 5px;">
-                            <button class="btn-file" style="flex:1; background: #6a0dad; font-size:11px;" onclick="saveToCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg> Salvar Nuvem</button>
-                            <button class="btn-file" style="flex:1; background: #333; font-size:11px;" onclick="loadFromCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir Nuvem</button>
-                        </div>
-                        <div id="cloudProjectsList" style="display:none; margin-top: 5px; max-height: 200px; overflow-y: auto; background: #fff; padding: 5px; border-radius: 6px; border: 1px solid #ddd;"></div>
-                    </div>
-                </div>
-
-                <div class="control-group" style="border-left: 3px solid #d9534f; background: #fffcfc;">
-                    <span class="label-pequena" style="color: #d9534f;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Auto-Gerar (Extrair Matéria)</span>
-                    <input type="text" id="newsLink" placeholder="Cole o link da matéria aqui...">
-                    <button class="btn-file" id="btnFetch" style="background: #d9534f; margin-top: 5px;" onclick="fetchMetadata()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Puxar Dados do Site</button>
-                    <div id="loadingText" class="loading">Buscando dados... aguarde.</div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
-
-                <span class="label-pequena">Salvar / Carregar Projeto Editável</span>
-                <p style="font-size: 12px; color: #666; margin-top: 0;"><strong>Atalhos:</strong> <code>Ctrl+S</code> para salvar. <code>Ctrl+Z</code> para desfazer.</p>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-file" style="flex: 1;" onclick="saveProject()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Salvar (.json)</button>
-                    <button class="btn-file" style="flex: 1; background: #666;" onclick="loadProjectModern()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir (.json)</button>
-                    <input type="file" id="projectLoad" accept=".json" style="display:none" onchange="loadProjectFallback(event)">
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
-                
-                <span class="label-pequena">Exportação de Imagens Finais</span>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn-file" onclick="downloadCurrent()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Baixar Slide Atual</button>
-                    <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg> Baixar Todos (Carrossel)</button>
-                    <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Exportar Pacote Completo (ZIP)</button>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
-                
-                <span class="label-pequena" style="text-align: center; margin-bottom: 8px;">Sobre o Soter</span>
-                <div style="background: #f0f2f5; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e1e4e8;">
-                    <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: bold; color: #333;">Desenvolvido por Jeff Mota</p>
-                    <p style="color: #464646; text-decoration: none; font-weight: bold; font-size: 11px;">v.16.8.2026 - ©Todos os direitos reservados</p>
-                    <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
-                        <a href="https://instagram.com/jeffmota.design" target="_blank" style="color: #da347a; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> @jeffmota.design
-                        </a>
-                        <a href="https://jeffmota.com.br" target="_blank" style="color: #005b9f; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> jeffmota.com.br
-                        </a>
-                        
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-media" class="panel active">
-                
-                <!-- PEXELS API -->
-                <div class="control-group" style="border-left: 3px solid #005b9f;">
-                    <span class="label-pequena" style="color: #005b9f;">Pexels (Busca Grátis)</span>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="text" id="pexelsSearch" placeholder="Ex: Negócios, Brasilia..." style="flex:1;">
-                        <button type="button" class="btn-file" onclick="searchPexels()" style="padding: 8px 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
-                        <button type="button" class="btn-file" id="btnPexelsClear" onclick="clearPexels()" style="padding: 8px 12px; background: #666; display: none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                    </div>
-                    <div id="pexelsResults" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 5px; padding-bottom: 5px; min-height: 0px; scrollbar-width: thin;"></div>
-                </div>
-
-                <div class="control-group" style="border-left: 3px solid var(--accent-green);">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <span class="label-pequena">Foto Principal (Manual)</span>
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="solidBgToggle" onchange="generatePreview(); toggleMediaControls()"> Ocultar</label>
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
-                            <span class="file-name-text" id="fn_bg">Nenhuma imagem</span>
-                            <input type="file" id="imgLoad" accept="image/*">
-                        </label>
-                        <button class="clear-img-btn" onclick="clearImg('bg')" title="Remover Foto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </div>
-                    
-                    <!-- CAIXA INTELIGENTE DE ENQUADRAMENTO -->
-                    <div id="bgControls" style="display: none; flex-direction: column; gap: 5px;">
-                        <span class="label-pequena" style="margin-top: 5px;">Enquadramento (Arraste no preview)</span>
-                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
-                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
-                        <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO Y:</span><input type="range" id="posY" min="-1000" max="1000" value="0" oninput="sync(this, 'numY')"><input type="number" id="numY" value="0" oninput="sync(this, 'posY')"></div>
-                        
-                        <div style="display: flex; gap: 15px; margin-top:5px;">
-                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipXToggle" onchange="generatePreview()"> Espelhar ↔</label>
-                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipYToggle" onchange="generatePreview()"> Espelhar ↕</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <span class="label-pequena">Textura de Fundo / Watermark Global</span>
-                    <div style="display: flex; gap: 5px;">
-                        <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
-                            <span class="file-name-text" id="fn_tpl">Nenhuma imagem</span>
-                            <input type="file" id="bgTemplateLoad" accept="image/*">
-                        </label>
-                        <button class="clear-img-btn" onclick="clearImg('tpl')" title="Remover Textura"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </div>
-                </div>
-
-                <div class="control-group" style="border-left: 3px solid #005b9f;">
-                    <span class="label-pequena" style="color: #005b9f;">Logo Institucional Livre</span>
-                    <div style="display: flex; gap: 5px;">
-                        <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
-                            <span class="file-name-text" id="fn_user_logo">Nenhuma logo</span>
-                            <input type="file" id="userLogoLoad" accept="image/png, image/jpeg">
-                        </label>
-                        <button class="clear-img-btn" onclick="clearImg('user_logo')" title="Remover Logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </div>
-                    
-                    <!-- CAIXA INTELIGENTE DA LOGO -->
-                    <div id="logoControls" style="display: none; align-items: center; gap: 15px; margin-top: 10px;">
-                        <div class="pos-grid">
-                            <button class="pos-btn active" id="pos_TL" onclick="setLogoPos('TL')" title="Topo Esquerda"></button>
-                            <button class="pos-btn" id="pos_TC" onclick="setLogoPos('TC')" title="Topo Centro"></button>
-                            <button class="pos-btn" id="pos_TR" onclick="setLogoPos('TR')" title="Topo Direita"></button>
-                            <div class="pos-empty"></div>
-                            <button class="pos-btn" id="pos_C" onclick="setLogoPos('C')" title="Centro (Marca d'água)"></button>
-                            <div class="pos-empty"></div>
-                            <button class="pos-btn" id="pos_BL" onclick="setLogoPos('BL')" title="Base Esquerda"></button>
-                            <button class="pos-btn" id="pos_BC" onclick="setLogoPos('BC')" title="Base Centro"></button>
-                            <button class="pos-btn" id="pos_BR" onclick="setLogoPos('BR')" title="Base Direita"></button>
-                        </div>
-                        <input type="hidden" id="logoPos" value="TL">
-                        
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">TAM:</span><input type="range" id="logoSize" min="10" max="300" value="100" oninput="sync(this, 'numLogoSize')"><input type="number" id="numLogoSize" value="100" oninput="sync(this, 'logoSize')"></div>
-                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS Y:</span><input type="range" id="logoPosY" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosY')"><input type="number" id="numLogoPosY" value="0" oninput="sync(this, 'logoPosY')"></div>
-                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS X:</span><input type="range" id="logoPosX" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosX')"><input type="number" id="numLogoPosX" value="0" oninput="sync(this, 'logoPosX')"></div>
-                            <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">OPAC:</span><input type="range" id="logoOpacity" min="0" max="100" value="100" oninput="sync(this, 'numLogoOpacity')"><input type="number" id="numLogoOpacity" value="100" oninput="sync(this, 'logoOpacity')"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BLOCO DO RODAPÉ DE PARCEIROS RESTAURADO -->
-                <div class="control-group" style="border-left: 3px solid #f0b900;">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <span class="label-pequena" style="color: #f0b900;">Rodapé Parceiros Externos</span>
-                        <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="useCustomFooterToggle" onchange="applyGlobalCustomFooter()"> Ativar</label>
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <label class="custom-upload" style="flex:1;">
-                            <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
-                            <span class="file-name-text" id="fn_foot">Nenhuma imagem</span>
-                            <input type="file" id="customFooterLoad" accept="image/png, image/jpeg">
-                        </label>
-                        <button class="clear-img-btn" onclick="clearImg('foot')" title="Remover Rodapé"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                    </div>
-                    <div style="margin-top: 5px;">
-                        <select id="customFooterBehavior" onchange="applyGlobalCustomFooter()" style="font-size: 11px;">
-                            <option value="all">Em todos os cards</option>
-                            <option value="cover">Apenas na Capa (Slide 1)</option>
-                            <option value="cover_last">Na Capa e no Último Card</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-text" class="panel">
-                <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="quoteToggle" onchange="generatePreview()"> Modo Citação (Aspas Inteligentes)</label></div>
-                
-                <div class="control-group">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <span class="label-pequena">Tipografia Principal</span>
-                        <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="useWebFonts" onchange="toggleWebFonts()"> 🌐 Google Fonts</label>
-                    </div>
-                    <select id="fontFamily" onchange="onFontChange()"></select>
-                </div>
-
-                <div class="control-group">
-                    <span class="label-pequena">Alinhamento Global</span>
-                    <div class="align-group">
-                        <button type="button" id="alignLeft" class="align-btn active" onclick="setAlign('left', this)">Esquerda</button>
-                        <button type="button" id="alignCenter" class="align-btn" onclick="setAlign('center', this)">Centro</button>
-                        <button type="button" id="alignRight" class="align-btn" onclick="setAlign('right', this)">Direita</button>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <span class="label-pequena">Posição Vertical do Conjunto (Sobe/Desce)</span>
-                    <div class="input-sync"><input type="range" id="tPosY" min="100" max="1800" value="850" oninput="sync(this, 'numTPosY')"><input type="number" id="numTPosY" value="850" oninput="sync(this, 'tPosY')"></div>
-                </div>
-                <div class="control-group">
-                    <span class="label-pequena" style="color:var(--accent-green)">Margem Lateral (Eixo X)</span>
-                    <div class="input-sync">
-                        <input type="range" id="tPosX" min="20" max="300" value="70" oninput="sync(this, 'numTPosX')">
-                        <input type="number" id="numTPosX" value="70" oninput="sync(this, 'tPosX')">
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label class="checkbox-label" style="color: #d9534f; font-size: 12px;"><input type="checkbox" id="customTextColorToggle" onchange="toggleCustomColors(); generatePreview()"> ⚠️ Alterar cores do texto (Avançado)</label>
-                    <div id="customTextColorBox" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <div><span class="label-pequena">Cor do Título</span><input type="color" id="cTitle" value="#ffffff" onchange="generatePreview()"></div>
-                        <div><span class="label-pequena">Cor do Corpo</span><input type="color" id="cDesc" value="#cccccc" onchange="generatePreview()"></div>
-                    </div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
-                <span class="label-pequena" style="color: #005b9f;">Blocos de Texto (Arraste para Reordenar)</span>
-                <p style="font-size: 11px; color: #666; margin: 0 0 5px 0;">
-                    <b>Dica Markdown:</b> Use <code>*marca-texto*</code>, <code>**negrito**</code>, <code>_itálico_</code>, <code>__sublinhado__</code>, <code>~tachado~</code>, ou <code>^sobrescrito^</code>.
-                </p>
-
-                <!-- COMPOSITOR DE BLOCOS -->
-                <div id="textBlocksContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 50px;">
-                    <!-- Blocos injetados via JS -->
-                </div>
-
-                <div style="display: flex; gap: 5px; margin-top: 15px; padding-bottom: 30px; flex-shrink: 0;">
-                    <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Título
-                    </button>
-                    <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="18" x2="3" y2="18"></line><line x1="21" y1="6" x2="3" y2="6"></line></svg> Corpo
-                    </button>
-                    <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Lista
-                    </button>
-                </div>
-            </div>
-
-            <div id="tab-design" class="panel">
-
-                <div class="control-group">
-                    <span class="label-pequena">Máscara Colorida / Degradê</span>
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
-                        <div><span class="label-pequena" style="font-size:10px">Cor da Máscara</span><input type="color" id="gradColor" value="#001a33" onchange="generatePreview()"></div>
-                        <div>
-                            <span class="label-pequena" style="font-size:10px; text-align:center;">Direção</span>
-                            <div style="display:flex; gap:3px;">
-                                <button type="button" class="dir-btn active" id="dir_bottom-up" onclick="setGradDir('bottom-up')">↑</button>
-                                <button type="button" class="dir-btn" id="dir_top-down" onclick="setGradDir('top-down')">↓</button>
-                                <button type="button" class="dir-btn" id="dir_right-left" onclick="setGradDir('right-left')">←</button>
-                                <button type="button" class="dir-btn" id="dir_left-right" onclick="setGradDir('left-right')">→</button>
-                            </div>
-                            <input type="hidden" id="gradDir" value="bottom-up">
-                        </div>
-                    </div>
-                    <div class="input-sync" style="margin-top: 10px;"><span style="font-size:10px; font-weight:bold; width: 60px;">OPAC:</span><input type="range" id="gradOpac" min="0" max="100" value="100" oninput="sync(this, 'numGradOpac')"><input type="number" id="numGradOpac" value="100" oninput="sync(this, 'gradOpac')"></div>
-                    <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SÓLIDO:</span><input type="range" id="gradSolid" min="0" max="100" value="40" oninput="sync(this, 'numGradSolid')"><input type="number" id="numGradSolid" value="40" oninput="sync(this, 'gradSolid')"></div>
-                    <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SUAVE:</span><input type="range" id="gradFade" min="0" max="100" value="40" oninput="sync(this, 'numGradFade')"><input type="number" id="numGradFade" value="40" oninput="sync(this, 'gradFade')"></div>
-                </div>
-
-                <div class="control-group" style="border-left: 3px solid #6a0dad;">
-                    <span class="label-pequena" style="color: #6a0dad;">Filtros de Imagem</span>
-                    <select id="imgEffect" onchange="toggleEffectControls(); generatePreview()" style="font-size:12px; padding:6px;">
-                        <option value="none">Nenhum</option>
-                        <option value="blur">Desfoque Cinematográfico (Blur)</option>
-                        <option value="grain">Ruído Analógico (Film Grain)</option>
-                        <option value="halftone">Retícula Offset (Jornal)</option>
-                        <option value="duotone">Duotone Institucional</option>
-                    </select>
-                    
-                    <div id="effectControls" style="display:none; margin-top:5px;">
-                        <div class="input-sync" id="effectIntensityWrapper"><span style="font-size:10px; font-weight:bold; width: 60px;">FORÇA:</span><input type="range" id="effectIntensity" min="0" max="100" value="50" oninput="sync(this, 'numEffectIntensity')"><input type="number" id="numEffectIntensity" value="50" oninput="sync(this, 'effectIntensity')"></div>
-                        <div id="duotoneColors" style="display:none; flex-direction: column; gap:10px; margin-top:10px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                                <div><span class="label-pequena" style="font-size:9px">Sombra</span><input type="color" id="duotoneDark" value="#001a33" onchange="generatePreview()"></div>
-                                <div><span class="label-pequena" style="font-size:9px">Luz</span><input type="color" id="duotoneLight" value="#76ce3f" onchange="generatePreview()"></div>
-                            </div>
-                            <div class="input-sync">
-                                <span style="font-size:10px; font-weight:bold; width: 60px;">CONTRASTE:</span>
-                                <input type="range" id="duotoneContrast" min="100" max="500" value="150" oninput="sync(this, 'numDuotoneContrast')">
-                                <input type="number" id="numDuotoneContrast" value="150" oninput="sync(this, 'duotoneContrast')">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="control-group" style="border-left: 3px solid var(--accent-green);">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <span class="label-pequena" style="color: var(--accent-green);">Moldura / Tema do Projeto</span>
-                        <select id="frameStyle" onchange="applyGlobalFooter()" style="font-size:12px; padding:4px; max-width: 150px;">
-                            <option value="curve_right">Clássico (Curva Direita)</option>
-                            <option value="curve_left">Clássico (Curva Esquerda)</option>
-                            <option value="line">Mínimo (Linha Reta)</option>
-                            <option value="editorial">Editorial (Dupla Linha)</option>
-                            <option value="terminal">Terminal (Visor)</option>
-                            <option value="polaroid">Polaroid (Foto Flutuante)</option>
-                            <option value="none">Sem Moldura</option>
-                        </select>
-                    </div>
-                    
-                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                        <select id="footerIcon" onchange="applyGlobalFooter()" style="width: 60px; padding: 8px;">
-                            <option value="🔗">🔗</option>
-                            <option value="🌐">🌐</option>
-                            <option value="📍">📍</option>
-                            <option value="👤">👤</option>
-                            <option value="@">@</option>
-                            <option value="📱">📱</option>
-                            <option value="👉">👉</option>
-                            <option value="•">•</option>
-                            <option value="✦">✦</option>
-                            <option value="—">—</option>
-                            <option value="|">|</option>
-                            <option value="©">©</option>
-                            <option value="®">®</option>
-                            <option value="">-</option>
-                        </select>
-                        <input type="text" id="footerText" value="seusite.com.br" oninput="applyGlobalFooter()" placeholder="Texto da base..." style="flex: 1;">
-                        <input type="date" id="footerDate" onchange="applyGlobalFooter()" title="Data Polaroid" style="display: none; width: 110px; padding: 8px; font-size: 11px; border-radius: 6px; border: 1px solid #ccc;">
-                    </div>
-                </div>
-
-                <div class="control-group" style="border-left: 3px solid #d9534f;">
-                    <span class="label-pequena" style="color: #d9534f;">Cobertura Especial</span>
-                    <label class="checkbox-label" style="font-size:12px; font-weight: bold;">
-                        <input type="checkbox" id="liveToggle" onchange="generatePreview()"> <svg width="12" height="12" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="12" cy="12" r="10"></circle></svg> Ativar selo "Ao Vivo"
-                    </label>
-                </div>
-
-                <div class="control-group">
-                    <div style="display:flex; justify-content: space-between; align-items: center;">
-                        <label class="checkbox-label"><input type="checkbox" id="tagToggle" checked onchange="generatePreview()"> Exibir Tag (Tarja)</label>
-                        <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="tagBleedToggle" onchange="generatePreview()"> Sangrar Tag</label>
-                    </div>
-                    <input type="text" id="mTag" value="DESTAQUE" placeholder="Texto da Tag..." oninput="generatePreview()">
-                </div>
-                
-                <span class="label-pequena">Paleta Principal Institucional</span>
-                <div id="quickPalette" class="palette-container">
-                    <div class="palette-color active" style="background:#76ce3f" onclick="setQuickColor(this, '#76ce3f')"></div>
-                    <div class="palette-color" style="background:#6a0dad" onclick="setQuickColor(this, '#6a0dad')"></div>
-                    <div class="palette-color" style="background:#d9534f" onclick="setQuickColor(this, '#d9534f')"></div>
-                    <div class="palette-color" style="background:#f39c12" onclick="setQuickColor(this, '#f39c12')"></div>
-                    <div class="palette-color" style="background:#003366" onclick="setQuickColor(this, '#003366')"></div>
-                    <div class="palette-color" style="background:#000000" onclick="setQuickColor(this, '#000000')"></div>
-                    <div class="palette-color" style="background:#FFFFFF" onclick="setQuickColor(this, '#FFFFFF')"></div>
-                </div>
-
-                <span class="label-pequena" style="margin-top:10px;">Paleta Acessibilidade (Alto Contraste UI)</span>
-                <div id="accessPalette" class="palette-container">
-                    <div class="palette-color" style="background:#005b9f" title="Azul ONU" onclick="setQuickColor(this, '#005b9f')"></div>
-                    <div class="palette-color" style="background:#ffcc00" title="Amarelo Alto Contraste" onclick="setQuickColor(this, '#ffcc00')"></div>
-                    <div class="palette-color" style="background:#00722A" title="Verde Escuro" onclick="setQuickColor(this, '#00722A')"></div>
-                    <div class="palette-color" style="background:#C50000" title="Vermelho Escuro" onclick="setQuickColor(this, '#C50000')"></div>
-                    <div class="palette-color" style="background:#5c007a" title="Roxo Contraste" onclick="setQuickColor(this, '#5c007a')"></div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
-                    <div><span class="label-pequena">Cor Linha/Tarja</span><input type="color" id="cTag" value="#76ce3f" onchange="applyGlobalColor(this.value)"></div>
-                    <div><span class="label-pequena">Cor Texto Tag</span><input type="color" id="cTagText" value="#ffffff" onchange="generatePreview()"></div>
-                    <div style="grid-column: span 2;"><span class="label-pequena">Cor Fundo Sólido Base</span><input type="color" id="cBg" value="#001a33" onchange="generatePreview()"></div>
-                </div>
-            </div>
-
-        </div>
     </div>
 </div>
 
+<!-- 2. O SEU APP REAL (Escondido no início) -->
+<div class="app-container" id="app" style="display: none;">
+    <div id="globalToast" class="global-toast">💾 Projeto Salvo!</div>
+
+    <div id="mockupModal" class="mockup-modal">
+        <div id="mockupLoading" class="loading-mockup"><div class="spinner"></div>Gerando Preview...</div>
+        <div id="igPost" class="ig-post">
+            <div class="ig-header"><div class="ig-avatar"></div><div class="ig-username">seu.perfil</div><div class="ig-dots">...</div></div>
+            <div class="ig-carousel-container" id="igCarouselContainer"><div class="ig-carousel" id="igCarousel"></div></div>
+            <div class="ig-footer">
+                <div class="ig-icons">♡ 💬 ↗</div>
+                <div class="ig-likes">Curtido por 42 pessoas</div>
+                <div class="ig-caption"><span style="font-weight:600">seu.perfil</span> Deslize para o lado para ler a notícia completa. Acompanhe nossas ações oficiais! #Notícia</div>
+            </div>
+        </div>
+        <button class="close-mockup" id="closeMockupBtn" style="display:none;" onclick="closeMockup()">Fechar Preview</button>
+    </div>
+
+    <div class="app-container" id="app">
+        
+        <div class="preview-pane">
+            <div class="project-title-badge">
+                <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span id="pNameText">Sem_titulo</span>
+            </div>
+            <div class="canvas-wrapper"><canvas id="feedCanvas" width="1080" height="1440"></canvas></div>
+            <div class="carousel-bar" id="carouselBar"></div>
+        </div>
+
+        <div class="controls-pane">
+            <div class="nav-bar">
+                <button class="nav-btn" onclick="toggleTab('tab-project', this)">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Arquivo
+                </button>
+                <button class="nav-btn" onclick="toggleTab('tab-layout', this)">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Layout
+                </button>
+                <button class="nav-btn active" onclick="toggleTab('tab-media', this)">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Mídias
+                </button>
+                <button class="nav-btn" onclick="toggleTab('tab-text', this)">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Textos
+                </button>
+                <button class="nav-btn" onclick="toggleTab('tab-design', this)">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Estilos
+                </button>
+                <button class="nav-btn btn-preview-desk" onclick="openMockup()">
+                    <svg fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Preview
+                </button>
+            </div>
+
+            <div class="panel-container" id="mobilePanelContainer">
+                <div class="sheet-handle" id="sheetHandle"></div>
+                <div id="tab-layout" class="panel">
+                    <span class="label-pequena">Formato da Arte</span>
+                    <p style="font-size: 12px; color: #666; margin-top: 0;">Isso mudará o formato de todos os cards e ajustará os textos automaticamente.</p>
+                    <div class="control-group">
+                        <input type="hidden" id="layoutFormat" value="3:4">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button type="button" id="fmt_3:4" class="format-btn active" onclick="applyGlobalFormat('3:4')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2" ry="2"></rect></svg>
+                                <span>3:4<small>1080 x 1440</small></span>
+                            </button>
+                            <button type="button" id="fmt_1:1" class="format-btn" onclick="applyGlobalFormat('1:1')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect></svg>
+                                <span>1:1<small>1080 x 1080</small></span>
+                            </button>
+                            <button type="button" id="fmt_9:16" class="format-btn" onclick="applyGlobalFormat('9:16')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" ry="2"></rect></svg>
+                                <span>9:16<small>1080 x 1920</small></span>
+                            </button>
+                            <button type="button" id="fmt_16:9" class="format-btn" onclick="applyGlobalFormat('16:9')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect></svg>
+                                <span>16:9<small>1080 x 608</small></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-project" class="panel">
+
+                    <!-- NOVO PAINEL SOTER CLOUD -->
+                    <div class="control-group" style="border-left: 3px solid #6a0dad; background: #fafafa; margin-bottom: 15px;">
+                        <span class="label-pequena" style="color: #6a0dad;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg> Soter Cloud Studio
+                        </span>
+                        <div id="auth-section" style="font-size: 11px; color: #666;">Conectando...</div>
+                        <div id="cloud-actions" style="display:none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn-file" style="flex:1; background: #6a0dad; font-size:11px;" onclick="saveToCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg> Salvar Nuvem</button>
+                                <button class="btn-file" style="flex:1; background: #333; font-size:11px;" onclick="loadFromCloud()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir Nuvem</button>
+                            </div>
+                            <div id="cloudProjectsList" style="display:none; margin-top: 5px; max-height: 200px; overflow-y: auto; background: #fff; padding: 5px; border-radius: 6px; border: 1px solid #ddd;"></div>
+                        </div>
+                    </div>
+
+                    <div class="control-group" style="border-left: 3px solid #d9534f; background: #fffcfc;">
+                        <span class="label-pequena" style="color: #d9534f;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Auto-Gerar (Extrair Matéria)</span>
+                        <input type="text" id="newsLink" placeholder="Cole o link da matéria aqui...">
+                        <button class="btn-file" id="btnFetch" style="background: #d9534f; margin-top: 5px;" onclick="fetchMetadata()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Puxar Dados do Site</button>
+                        <div id="loadingText" class="loading">Buscando dados... aguarde.</div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+
+                    <span class="label-pequena">Salvar / Carregar Projeto Editável</span>
+                    <p style="font-size: 12px; color: #666; margin-top: 0;"><strong>Atalhos:</strong> <code>Ctrl+S</code> para salvar. <code>Ctrl+Z</code> para desfazer.</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-file" style="background: #001a33; flex: 1;" onclick="saveProject()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Salvar (.json)</button>
+                        <button class="btn-file" style="flex: 1; background: #001a33;" onclick="loadProjectModern()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Abrir (.json)</button>
+                        <input type="file" id="projectLoad" accept=".json" style="display:none" onchange="loadProjectFallback(event)">
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                    
+                    <span class="label-pequena">Exportação de Imagens Finais</span>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn-file" onclick="downloadCurrent()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Baixar Slide Atual</button>
+                        <button class="btn-file" id="btnDownAllTab" style="display: none;" onclick="downloadAll()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg> Baixar Todos (Carrossel)</button>
+                        <button type="button" class="btn-file" style="background: #001a33;" onclick="exportToPDF()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Exportar PDF
+                        </button>
+                        <button id="btnExportZip" class="btn-file" style="background: #2d8a2d;" onclick="exportProjectPackage()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Exportar Pacote Completo (ZIP)</button>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 15px 0;">
+                    
+                    <span class="label-pequena" style="text-align: center; margin-bottom: 8px;">Sobre o Soter</span>
+                    <div style="background: #f0f2f5; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e1e4e8;">
+                        <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: bold; color: #333;">Desenvolvido por Jeff Mota</p>
+                        <p style="color: #464646; text-decoration: none; font-weight: bold; font-size: 11px;">v.16.8.2026 - ©Todos os direitos reservados</p>
+                        <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <a href="https://instagram.com/jeffmota.design" target="_blank" style="color: #da347a; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> @jeffmota.design
+                            </a>
+                            <a href="https://jeffmota.com.br" target="_blank" style="color: #005b9f; text-decoration: none; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; transition: 0.2s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> jeffmota.com.br
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-media" class="panel active">
+                    
+                    <!-- PEXELS API -->
+                    <div class="control-group" style="border-left: 3px solid #005b9f;">
+                        <span class="label-pequena" style="color: #005b9f;">Pexels (Busca Grátis)</span>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="pexelsSearch" placeholder="Ex: Negócios, Brasilia..." style="flex:1;">
+                            <button type="button" class="btn-file" onclick="searchPexels()" style="padding: 8px 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                            <button type="button" class="btn-file" id="btnPexelsClear" onclick="clearPexels()" style="padding: 8px 12px; background: #666; display: none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        </div>
+                        <div id="pexelsResults" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 5px; padding-bottom: 5px; min-height: 0px; scrollbar-width: thin;"></div>
+                    </div>
+
+                    <div class="control-group" style="border-left: 3px solid var(--accent-green);">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <span class="label-pequena">Foto Principal (Manual)</span>
+                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="solidBgToggle" onchange="generatePreview(); toggleMediaControls()"> Ocultar</label>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <label class="custom-upload" style="flex:1;">
+                                <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
+                                <span class="file-name-text" id="fn_bg">Nenhuma imagem</span>
+                                <input type="file" id="imgLoad" accept="image/*">
+                            </label>
+                            <button class="clear-img-btn" onclick="clearImg('bg')" title="Remover Foto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                        
+                        <!-- CAIXA INTELIGENTE DE ENQUADRAMENTO -->
+                        <div id="bgControls" style="display: none; flex-direction: column; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                                <span class="label-pequena" style="margin:0;">Enquadramento no Canvas</span>
+                                <label class="checkbox-label" style="font-size:11px; color:#d9534f; margin:0;" title="Impede o toque acidental na foto">
+                                    <input type="checkbox" id="bgLockToggle" onchange="generatePreview()">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Travar Fundo
+                                </label>
+                            </div>
+                            <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
+                            <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
+                            <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO Y:</span><input type="range" id="posY" min="-1000" max="1000" value="0" oninput="sync(this, 'numY')"><input type="number" id="numY" value="0" oninput="sync(this, 'posY')"></div>
+                            
+                            <div style="display: flex; gap: 15px; margin-top:5px;">
+                                <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipXToggle" onchange="generatePreview()"> Espelhar ↔</label>
+                                <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="flipYToggle" onchange="generatePreview()"> Espelhar ↕</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="label-pequena">Textura de Fundo / Watermark Global</span>
+                        <div style="display: flex; gap: 5px;">
+                            <label class="custom-upload" style="flex:1;">
+                                <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
+                                <span class="file-name-text" id="fn_tpl">Nenhuma imagem</span>
+                                <input type="file" id="bgTemplateLoad" accept="image/*">
+                            </label>
+                            <button class="clear-img-btn" onclick="clearImg('tpl')" title="Remover Textura"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="control-group" style="border-left: 3px solid #005b9f;">
+                        <span class="label-pequena" style="color: #005b9f;">Logo Institucional Livre</span>
+                        <div style="display: flex; gap: 5px;">
+                            <label class="custom-upload" style="flex:1;">
+                                <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
+                                <span class="file-name-text" id="fn_user_logo">Nenhuma logo</span>
+                                <input type="file" id="userLogoLoad" accept="image/png, image/jpeg">
+                            </label>
+                            <button class="clear-img-btn" onclick="clearImg('user_logo')" title="Remover Logo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                        
+                        <!-- CAIXA INTELIGENTE DA LOGO -->
+                        <div id="logoControls" style="display: none; align-items: center; gap: 15px; margin-top: 10px;">
+                            <div class="pos-grid">
+                                <button class="pos-btn active" id="pos_TL" onclick="setLogoPos('TL')" title="Topo Esquerda"></button>
+                                <button class="pos-btn" id="pos_TC" onclick="setLogoPos('TC')" title="Topo Centro"></button>
+                                <button class="pos-btn" id="pos_TR" onclick="setLogoPos('TR')" title="Topo Direita"></button>
+                                <div class="pos-empty"></div>
+                                <button class="pos-btn" id="pos_C" onclick="setLogoPos('C')" title="Centro (Marca d'água)"></button>
+                                <div class="pos-empty"></div>
+                                <button class="pos-btn" id="pos_BL" onclick="setLogoPos('BL')" title="Base Esquerda"></button>
+                                <button class="pos-btn" id="pos_BC" onclick="setLogoPos('BC')" title="Base Centro"></button>
+                                <button class="pos-btn" id="pos_BR" onclick="setLogoPos('BR')" title="Base Direita"></button>
+                            </div>
+                            <input type="hidden" id="logoPos" value="TL">
+                            
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                                <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">TAM:</span><input type="range" id="logoSize" min="10" max="300" value="100" oninput="sync(this, 'numLogoSize')"><input type="number" id="numLogoSize" value="100" oninput="sync(this, 'logoSize')"></div>
+                                <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS Y:</span><input type="range" id="logoPosY" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosY')"><input type="number" id="numLogoPosY" value="0" oninput="sync(this, 'logoPosY')"></div>
+                                <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">POS X:</span><input type="range" id="logoPosX" min="-500" max="500" value="0" oninput="sync(this, 'numLogoPosX')"><input type="number" id="numLogoPosX" value="0" oninput="sync(this, 'logoPosX')"></div>
+                                <div class="input-sync"><span style="font-size:9px; font-weight:bold; width: 40px;">OPAC:</span><input type="range" id="logoOpacity" min="0" max="100" value="100" oninput="sync(this, 'numLogoOpacity')"><input type="number" id="numLogoOpacity" value="100" oninput="sync(this, 'logoOpacity')"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO DO RODAPÉ DE PARCEIROS RESTAURADO -->
+                    <div class="control-group" style="border-left: 3px solid #f0b900;">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <span class="label-pequena" style="color: #f0b900;">Rodapé Parceiros Externos</span>
+                            <label class="checkbox-label" style="font-size:11px;"><input type="checkbox" id="useCustomFooterToggle" onchange="applyGlobalCustomFooter()"> Ativar</label>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <label class="custom-upload" style="flex:1;">
+                                <span class="btn-up-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload</span>
+                                <span class="file-name-text" id="fn_foot">Nenhuma imagem</span>
+                                <input type="file" id="customFooterLoad" accept="image/png, image/jpeg">
+                            </label>
+                            <button class="clear-img-btn" onclick="clearImg('foot')" title="Remover Rodapé"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <select id="customFooterBehavior" onchange="applyGlobalCustomFooter()" style="font-size: 11px;">
+                                <option value="all">Em todos os cards</option>
+                                <option value="cover">Apenas na Capa (Slide 1)</option>
+                                <option value="cover_last">Na Capa e no Último Card</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-text" class="panel">
+                    <div class="control-group"><label class="checkbox-label"><input type="checkbox" id="quoteToggle" onchange="generatePreview()"> Modo Citação (Aspas Inteligentes)</label></div>
+                    
+                    <div class="control-group">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <span class="label-pequena">Tipografia Principal</span>
+                            <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="useWebFonts" onchange="toggleWebFonts()"> 🌐 Google Fonts</label>
+                        </div>
+                        <select id="fontFamily" onchange="onFontChange()"></select>
+                    </div>
+
+                    <div class="control-group">
+                        <span class="label-pequena">Alinhamento Global</span>
+                        <div class="align-group">
+                            <button type="button" id="alignLeft" class="align-btn active" onclick="setAlign('left', this)">Esquerda</button>
+                            <button type="button" id="alignCenter" class="align-btn" onclick="setAlign('center', this)">Centro</button>
+                            <button type="button" id="alignRight" class="align-btn" onclick="setAlign('right', this)">Direita</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <span class="label-pequena">Posição Vertical do Conjunto (Sobe/Desce)</span>
+                        <div class="input-sync"><input type="range" id="tPosY" min="100" max="1800" value="850" oninput="sync(this, 'numTPosY')"><input type="number" id="numTPosY" value="850" oninput="sync(this, 'tPosY')"></div>
+                    </div>
+                    <div class="control-group">
+                        <span class="label-pequena" style="color:var(--accent-green)">Margem Lateral (Eixo X)</span>
+                        <div class="input-sync">
+                            <input type="range" id="tPosX" min="20" max="300" value="70" oninput="sync(this, 'numTPosX')">
+                            <input type="number" id="numTPosX" value="70" oninput="sync(this, 'tPosX')">
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="checkbox-label" style="color: #d9534f; font-size: 12px;"><input type="checkbox" id="customTextColorToggle" onchange="toggleCustomColors(); generatePreview()"> ⚠️ Alterar cores do texto (Avançado)</label>
+                        <div id="customTextColorBox" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <div><span class="label-pequena">Cor do Título</span><input type="color" id="cTitle" value="#ffffff" onchange="generatePreview()"></div>
+                            <div><span class="label-pequena">Cor do Corpo</span><input type="color" id="cDesc" value="#cccccc" onchange="generatePreview()"></div>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                    <span class="label-pequena" style="color: #005b9f;">Blocos de Texto (Arraste para Reordenar)</span>
+                    <p style="font-size: 11px; color: #666; margin: 0 0 5px 0;">
+                        <b>Dica Markdown:</b> Use <code>*marca-texto*</code>, <code>**negrito**</code>, <code>_itálico_</code>, <code>__sublinhado__</code>, <code>~tachado~</code>, ou <code>^sobrescrito^</code>.
+                    </p>
+
+                    <!-- COMPOSITOR DE BLOCOS -->
+                    <div id="textBlocksContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 50px;">
+                        <!-- Blocos injetados via JS -->
+                    </div>
+
+                    <div style="position: sticky; bottom: 0; background: #ffffff; padding: 15px 0 5px 0; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 100;">
+                        <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Título
+                        </button>
+                        <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="18" x2="3" y2="18"></line><line x1="21" y1="6" x2="3" y2="6"></line></svg> Corpo
+                        </button>
+                        <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Lista
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tab-design" class="panel">
+
+                    <div class="control-group">
+                        <span class="label-pequena">Máscara Colorida / Degradê</span>
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
+                            <div><span class="label-pequena" style="font-size:10px">Cor da Máscara</span><input type="color" id="gradColor" value="#001a33" onchange="generatePreview()"></div>
+                            <div>
+                                <span class="label-pequena" style="font-size:10px; text-align:center;">Direção</span>
+                                <div style="display:flex; gap:3px;">
+                                    <button type="button" class="dir-btn active" id="dir_bottom-up" onclick="setGradDir('bottom-up')">↑</button>
+                                    <button type="button" class="dir-btn" id="dir_top-down" onclick="setGradDir('top-down')">↓</button>
+                                    <button type="button" class="dir-btn" id="dir_right-left" onclick="setGradDir('right-left')">←</button>
+                                    <button type="button" class="dir-btn" id="dir_left-right" onclick="setGradDir('left-right')">→</button>
+                                </div>
+                                <input type="hidden" id="gradDir" value="bottom-up">
+                            </div>
+                        </div>
+                        <div class="input-sync" style="margin-top: 10px;"><span style="font-size:10px; font-weight:bold; width: 60px;">OPAC:</span><input type="range" id="gradOpac" min="0" max="100" value="100" oninput="sync(this, 'numGradOpac')"><input type="number" id="numGradOpac" value="100" oninput="sync(this, 'gradOpac')"></div>
+                        <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SÓLIDO:</span><input type="range" id="gradSolid" min="0" max="100" value="40" oninput="sync(this, 'numGradSolid')"><input type="number" id="numGradSolid" value="40" oninput="sync(this, 'gradSolid')"></div>
+                        <div class="input-sync"><span style="font-size:10px; font-weight:bold; width: 60px;">SUAVE:</span><input type="range" id="gradFade" min="0" max="100" value="40" oninput="sync(this, 'numGradFade')"><input type="number" id="numGradFade" value="40" oninput="sync(this, 'gradFade')"></div>
+                    </div>
+
+                    <div class="control-group" style="border-left: 3px solid #6a0dad;">
+                        <span class="label-pequena" style="color: #6a0dad;">Filtros de Imagem</span>
+                        <select id="imgEffect" onchange="toggleEffectControls(); generatePreview()" style="font-size:12px; padding:6px;">
+                            <option value="none">Nenhum</option>
+                            <option value="blur">Desfoque Cinematográfico (Blur)</option>
+                            <option value="grain">Ruído Analógico (Film Grain)</option>
+                            <option value="halftone">Retícula Offset (Jornal)</option>
+                            <option value="duotone">Duotone Institucional</option>
+                        </select>
+                        
+                        <div id="effectControls" style="display:none; margin-top:5px;">
+                            <div class="input-sync" id="effectIntensityWrapper"><span style="font-size:10px; font-weight:bold; width: 60px;">FORÇA:</span><input type="range" id="effectIntensity" min="0" max="100" value="50" oninput="sync(this, 'numEffectIntensity')"><input type="number" id="numEffectIntensity" value="50" oninput="sync(this, 'effectIntensity')"></div>
+                            <div id="duotoneColors" style="display:none; flex-direction: column; gap:10px; margin-top:10px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                    <div><span class="label-pequena" style="font-size:9px">Sombra</span><input type="color" id="duotoneDark" value="#001a33" onchange="generatePreview()"></div>
+                                    <div><span class="label-pequena" style="font-size:9px">Luz</span><input type="color" id="duotoneLight" value="#76ce3f" onchange="generatePreview()"></div>
+                                </div>
+                                <div class="input-sync">
+                                    <span style="font-size:10px; font-weight:bold; width: 60px;">CONTRASTE:</span>
+                                    <input type="range" id="duotoneContrast" min="100" max="500" value="150" oninput="sync(this, 'numDuotoneContrast')">
+                                    <input type="number" id="numDuotoneContrast" value="150" oninput="sync(this, 'duotoneContrast')">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group" style="border-left: 3px solid var(--accent-green);">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <span class="label-pequena" style="color: var(--accent-green);">Moldura / Tema do Projeto</span>
+                            <select id="frameStyle" onchange="applyGlobalFooter()" style="font-size:12px; padding:4px; max-width: 150px;">
+                                <option value="curve_right">Clássico (Curva Direita)</option>
+                                <option value="curve_left">Clássico (Curva Esquerda)</option>
+                                <option value="line">Mínimo (Linha Reta)</option>
+                                <option value="editorial">Editorial (Dupla Linha)</option>
+                                <option value="terminal">Terminal (Visor)</option>
+                                <option value="polaroid">Polaroid (Foto Flutuante)</option>
+                                <option value="none">Sem Moldura</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; gap: 5px; margin-top: 5px;">
+                            <select id="footerIcon" onchange="applyGlobalFooter()" style="width: 60px; padding: 8px;">
+                                <option value="🔗">🔗</option>
+                                <option value="🌐">🌐</option>
+                                <option value="📍">📍</option>
+                                <option value="👤">👤</option>
+                                <option value="@">@</option>
+                                <option value="📱">📱</option>
+                                <option value="👉">👉</option>
+                                <option value="•">•</option>
+                                <option value="✦">✦</option>
+                                <option value="—">—</option>
+                                <option value="|">|</option>
+                                <option value="©">©</option>
+                                <option value="®">®</option>
+                                <option value="">-</option>
+                            </select>
+                            <input type="text" id="footerText" value="seusite.com.br" oninput="applyGlobalFooter()" placeholder="Texto da base..." style="flex: 1;">
+                            <input type="date" id="footerDate" onchange="applyGlobalFooter()" title="Data Polaroid" style="display: none; width: 110px; padding: 8px; font-size: 11px; border-radius: 6px; border: 1px solid #ccc;">
+                        </div>
+                    </div>
+
+                    <div class="control-group" style="border-left: 3px solid #d9534f;">
+                        <span class="label-pequena" style="color: #d9534f;">Cobertura Especial</span>
+                        <label class="checkbox-label" style="font-size:12px; font-weight: bold;">
+                            <input type="checkbox" id="liveToggle" onchange="generatePreview()"> <svg width="12" height="12" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="12" cy="12" r="10"></circle></svg> Ativar selo "Ao Vivo"
+                        </label>
+                    </div>
+
+                    <div class="control-group">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <label class="checkbox-label"><input type="checkbox" id="tagToggle" checked onchange="generatePreview()"> Exibir Tag (Tarja)</label>
+                            <label class="checkbox-label" style="font-size:11px; color:#0056b3;"><input type="checkbox" id="tagBleedToggle" onchange="generatePreview()"> Sangrar Tag</label>
+                        </div>
+                        <input type="text" id="mTag" value="DESTAQUE" placeholder="Texto da Tag..." oninput="generatePreview()">
+                    </div>
+                    
+                    <span class="label-pequena">Paleta Principal Institucional</span>
+                    <div id="quickPalette" class="palette-container">
+                        <div class="palette-color active" style="background:#76ce3f" onclick="setQuickColor(this, '#76ce3f')"></div>
+                        <div class="palette-color" style="background:#6a0dad" onclick="setQuickColor(this, '#6a0dad')"></div>
+                        <div class="palette-color" style="background:#d9534f" onclick="setQuickColor(this, '#d9534f')"></div>
+                        <div class="palette-color" style="background:#f39c12" onclick="setQuickColor(this, '#f39c12')"></div>
+                        <div class="palette-color" style="background:#003366" onclick="setQuickColor(this, '#003366')"></div>
+                        <div class="palette-color" style="background:#000000" onclick="setQuickColor(this, '#000000')"></div>
+                        <div class="palette-color" style="background:#FFFFFF" onclick="setQuickColor(this, '#FFFFFF')"></div>
+                    </div>
+
+                    <span class="label-pequena" style="margin-top:10px;">Paleta Acessibilidade (Alto Contraste UI)</span>
+                    <div id="accessPalette" class="palette-container">
+                        <div class="palette-color" style="background:#005b9f" title="Azul ONU" onclick="setQuickColor(this, '#005b9f')"></div>
+                        <div class="palette-color" style="background:#ffcc00" title="Amarelo Alto Contraste" onclick="setQuickColor(this, '#ffcc00')"></div>
+                        <div class="palette-color" style="background:#00722A" title="Verde Escuro" onclick="setQuickColor(this, '#00722A')"></div>
+                        <div class="palette-color" style="background:#C50000" title="Vermelho Escuro" onclick="setQuickColor(this, '#C50000')"></div>
+                        <div class="palette-color" style="background:#5c007a" title="Roxo Contraste" onclick="setQuickColor(this, '#5c007a')"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                        <div><span class="label-pequena">Cor Linha/Tarja</span><input type="color" id="cTag" value="#76ce3f" onchange="applyGlobalColor(this.value)"></div>
+                        <div><span class="label-pequena">Cor Texto Tag</span><input type="color" id="cTagText" value="#ffffff" onchange="generatePreview()"></div>
+                        <div style="grid-column: span 2;"><span class="label-pequena">Cor Fundo Sólido Base</span><input type="color" id="cBg" value="#001a33" onchange="generatePreview()"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     const canvas = document.getElementById('feedCanvas');
     const ctx = canvas.getContext('2d');
@@ -693,7 +1009,7 @@
             if(!pName) return;
         }
 
-        if (!isSilent) triggerGlobalToast("⏳ Salvando na nuvem...");
+        
 
         let payload = { user_id: currentUser.id, project_name: pName, project_data: JSON.parse(JSON.stringify(slides)), updated_at: new Date().toISOString() };
         let error;
@@ -713,8 +1029,17 @@
             if (!isSilent) alert("Erro ao salvar: " + error.message);
         } else {
             hasUnsavedChanges = false;
-            pNameUI.innerText = pName; // Atualiza a tela (Apaga a bolinha)
-            triggerGlobalToast(isSilent ? "☁️ Salvo automaticamente" : "☁️ Salvo com Sucesso!");
+            pNameUI.style.fontStyle = 'normal'; // Tira o itálico
+            
+            if (isSilent) {
+                // A piscada verde suave (Fade)
+                pNameUI.style.color = '#2d8a2d';
+                pNameUI.style.transition = 'color 0.5s ease';
+                setTimeout(() => { pNameUI.style.color = ''; }, 1500);
+            } else {
+                pNameUI.innerText = pName;
+                triggerGlobalToast("☁️ Salvo com Sucesso!");
+            }
         }
     }
 
@@ -1538,45 +1863,152 @@ function injectSVGs() {
     function updateCurrentSlideState() { 
         if(isProgrammaticUpdate || slides.length === 0) return; 
         slides[currentSlide] = getFormState(); 
-        
-        // Cinto de segurança local
         localStorage.setItem('soter_autosave', JSON.stringify(slides));
         
-        // Mágica da Nuvem: Adiciona a bolinha e agenda o Auto-Save
         if (currentUser && currentCloudProjectId) {
             hasUnsavedChanges = true;
             let pNameUI = document.getElementById('pNameText');
-            if (!pNameUI.innerText.endsWith(' •')) pNameUI.innerText += ' •'; // Acende a bolinha discreta
+            pNameUI.style.fontStyle = 'italic'; // Fica itálico pra indicar alteração
             
             clearTimeout(cloudAutosaveTimer);
             cloudAutosaveTimer = setTimeout(() => {
-                saveToCloud(true, true); // (isUpdate=true, isSilent=true) -> Roda o auto-save aos 5s!
-            }, 5000);
+                saveToCloud(true, true); // Roda o auto-save aos 10s silenciosamente
+            }, 10000); 
         }
 
         if(!isUndoRedo) { clearTimeout(historyTimeout); historyTimeout = setTimeout(saveHistory, 600); } 
     }
 
     function renderCarouselBar() {
-        const bar = document.getElementById('carouselBar'); bar.innerHTML = '';
-        let btnUndo = document.createElement('button'); btnUndo.id = 'btnUndo'; btnUndo.type = 'button'; btnUndo.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>'; btnUndo.className = 'slide-btn aux-btn'; btnUndo.title = 'Desfazer (Ctrl+Z)'; btnUndo.onclick = undo; bar.appendChild(btnUndo);
-        let btnRedo = document.createElement('button'); btnRedo.id = 'btnRedo'; btnRedo.type = 'button'; btnRedo.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"></path></svg>'; btnRedo.className = 'slide-btn aux-btn'; btnRedo.title = 'Refazer (Ctrl+Y)'; btnRedo.onclick = redo; bar.appendChild(btnRedo);
-        let div = document.createElement('div'); div.style = "width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 5px; flex-shrink: 0;"; bar.appendChild(div);
+        const bar = document.getElementById('carouselBar');
+        bar.innerHTML = '';
         
-        slides.forEach((slide, i) => {
-            let btn = document.createElement('button'); btn.type = 'button'; btn.innerText = (i + 1); btn.className = i === currentSlide ? 'slide-btn active' : 'slide-btn'; btn.draggable = true; 
+        // 1. O ESTRUTURAL BLINDADO: CSS GRID
+        // Isso desmembra fisicamente a barra em 3 setores independentes.
+        bar.style.display = 'grid';
+        bar.style.gridTemplateColumns = '40px 1fr 40px'; // Esquerda 40px | Centro Livre | Direita 40px
+        bar.style.alignItems = 'center';
+        bar.style.width = '100%';
+        bar.style.minHeight = '40px'; // IMPEDE O CELULAR DE ESMAGAR E SUMIR COM A BARRA!
+        bar.style.marginTop = '15px';
+        bar.style.marginBottom = '15px';
+        bar.style.padding = '0 5px';
+        bar.style.boxSizing = 'border-box';
+        
+        // Limpando qualquer fantasma de hack anterior
+        bar.style.position = 'relative';
+        bar.style.bottom = 'auto';
+
+        // 2. SETOR ESQUERDO: Botão de Desfazer (Totalmente isolado na 1ª coluna)
+        let leftZone = document.createElement('div');
+        leftZone.style.display = 'flex';
+        leftZone.style.justifyContent = 'flex-start';
+        
+        let btnUndo = document.createElement('button');
+        btnUndo.id = 'btnUndo';
+        btnUndo.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>';
+        btnUndo.className = 'slide-btn aux-btn';
+        btnUndo.style.margin = '0'; 
+        btnUndo.onclick = undo;
+        leftZone.appendChild(btnUndo);
+        bar.appendChild(leftZone);
+
+        // 3. SETOR CENTRAL: Navegação de Páginas e "..." (Isolado na coluna do meio)
+        let centerZone = document.createElement('div');
+        centerZone.style.display = 'flex';
+        centerZone.style.justifyContent = 'center';
+        centerZone.style.alignItems = 'center';
+        centerZone.style.gap = '4px';
+
+        let maxVisible = 5; 
+        let start = Math.max(0, currentSlide - Math.floor(maxVisible / 2));
+        let end = Math.min(slides.length - 1, start + maxVisible - 1);
+        
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(0, end - maxVisible + 1);
+        }
+
+        if (start > 0) {
+            let dotsLeft = document.createElement('span');
+            dotsLeft.innerText = '...';
+            dotsLeft.style = "color: #999; font-weight: bold; padding: 0 2px; font-size: 14px;";
+            centerZone.appendChild(dotsLeft);
+        }
+
+        for (let i = start; i <= end; i++) {
+            let btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerText = (i + 1);
+            btn.className = i === currentSlide ? 'slide-btn active' : 'slide-btn';
+            btn.draggable = true;
+            
             btn.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', i); setTimeout(() => btn.style.opacity = '0.5', 0); });
             btn.addEventListener('dragend', () => { btn.style.opacity = '1'; document.querySelectorAll('.slide-btn').forEach(b => b.classList.remove('drag-over')); });
             btn.addEventListener('dragover', (e) => { e.preventDefault(); btn.classList.add('drag-over'); });
             btn.addEventListener('dragleave', () => { btn.classList.remove('drag-over'); });
-            btn.addEventListener('drop', (e) => { e.preventDefault(); btn.classList.remove('drag-over'); let fromIndex = parseInt(e.dataTransfer.getData('text/plain')); let toIndex = i; if (fromIndex !== toIndex && !isNaN(fromIndex)) { forceSaveHistory(); let movedSlide = slides.splice(fromIndex, 1)[0]; slides.splice(toIndex, 0, movedSlide); isProgrammaticUpdate = true; switchSlide(toIndex, () => forceSaveHistory()); } });
-            btn.onclick = () => switchSlide(i); bar.appendChild(btn);
-        });
-        
-        let addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>'; addBtn.className = 'slide-btn add'; addBtn.onclick = addNewSlide; bar.appendChild(addBtn);
+            btn.addEventListener('drop', (e) => { 
+                e.preventDefault(); btn.classList.remove('drag-over'); 
+                let fromIndex = parseInt(e.dataTransfer.getData('text/plain')); 
+                let toIndex = i; 
+                if (fromIndex !== toIndex && !isNaN(fromIndex)) { 
+                    forceSaveHistory(); 
+                    let movedSlide = slides.splice(fromIndex, 1)[0]; 
+                    slides.splice(toIndex, 0, movedSlide); 
+                    isProgrammaticUpdate = true; 
+                    switchSlide(toIndex, () => forceSaveHistory()); 
+                } 
+            });
+            btn.onclick = () => switchSlide(i);
+            centerZone.appendChild(btn);
+        }
+
+        if (end < slides.length - 1) {
+            let dotsRight = document.createElement('span');
+            dotsRight.innerText = '...';
+            dotsRight.style = "color: #999; font-weight: bold; padding: 0 2px; font-size: 14px;";
+            centerZone.appendChild(dotsRight);
+        }
+
+        let addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+        addBtn.className = 'slide-btn add';
+        addBtn.style.marginLeft = "4px";
+        addBtn.onclick = addNewSlide;
+        centerZone.appendChild(addBtn);
+
         const btnAllTab = document.getElementById('btnDownAllTab');
-        if (slides.length > 1) { let delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'; delBtn.className = 'slide-btn del'; delBtn.title = "Excluir Slide Atual"; delBtn.onclick = deleteCurrentSlide; bar.appendChild(delBtn); btnAllTab.style.display = 'block'; } else { btnAllTab.style.display = 'none'; }
+        if (slides.length > 1) { 
+            let delBtn = document.createElement('button'); 
+            delBtn.type = 'button'; 
+            delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'; 
+            delBtn.className = 'slide-btn del'; 
+            delBtn.title = "Excluir Slide"; 
+            delBtn.onclick = deleteCurrentSlide; 
+            centerZone.appendChild(delBtn); 
+            if(btnAllTab) btnAllTab.style.display = 'block'; 
+        } else { 
+            if(btnAllTab) btnAllTab.style.display = 'none'; 
+        }
+
+        bar.appendChild(centerZone);
+
+        // 4. SETOR DIREITO: Botão de Refazer (Totalmente isolado na 3ª coluna)
+        let rightZone = document.createElement('div');
+        rightZone.style.display = 'flex';
+        rightZone.style.justifyContent = 'flex-end';
+
+        let btnRedo = document.createElement('button');
+        btnRedo.id = 'btnRedo';
+        btnRedo.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"></path></svg>';
+        btnRedo.className = 'slide-btn aux-btn';
+        btnRedo.style.margin = '0'; 
+        btnRedo.onclick = redo;
+        rightZone.appendChild(btnRedo);
+        bar.appendChild(rightZone);
+
         updateUndoRedoButtons();
+        renderCarouselArrows();
     }
 
     function addNewSlide() {
@@ -1598,6 +2030,87 @@ function injectSVGs() {
         if (newState.frameStyle && newState.frameStyle.includes('curve')) newState.frameStyle = 'line';
         
         slides.push(newState); isProgrammaticUpdate = true; switchSlide(slides.length - 1, () => { isProgrammaticUpdate = false; forceSaveHistory(); }); 
+    }
+
+    function renderCarouselArrows() {
+        let container = canvas.parentElement;
+        if (!container) return;
+
+        // Garante que o container da imagem é o "universo" onde as setas vão flutuar
+        if (window.getComputedStyle(container).position === 'static') {
+            container.style.position = 'relative';
+        }
+
+        // Injeta o CSS moderno das setas (Translúcidas, Blur e Animação de Hover)
+        if (!document.getElementById('carouselArrowStyles')) {
+            let style = document.createElement('style');
+            style.id = 'carouselArrowStyles';
+            style.innerHTML = `
+                .canvas-arrow {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
+                    background: rgba(0, 0, 0, 0.4);
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 50;
+                    backdrop-filter: blur(4px);
+                    transition: all 0.2s ease;
+                }
+                .canvas-arrow:hover {
+                    background: rgba(0, 0, 0, 0.8);
+                    transform: translateY(-50%) scale(1.1);
+                }
+                /* A Mágica do Desktop: Some no celular para não atrapalhar! */
+                @media (max-width: 768px) {
+                    .canvas-arrow { display: none !important; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Cria a seta ESQUERDA se ela ainda não existir
+        let prevBtn = document.getElementById('canvasPrevArrow');
+        if (!prevBtn) {
+            prevBtn = document.createElement('button');
+            prevBtn.id = 'canvasPrevArrow';
+            prevBtn.className = 'canvas-arrow';
+            prevBtn.style.left = '15px';
+            prevBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+            container.appendChild(prevBtn);
+        }
+
+        // Cria a seta DIREITA se ela ainda não existir
+        let nextBtn = document.getElementById('canvasNextArrow');
+        if (!nextBtn) {
+            nextBtn = document.createElement('button');
+            nextBtn.id = 'canvasNextArrow';
+            nextBtn.className = 'canvas-arrow';
+            nextBtn.style.right = '15px';
+            nextBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+            container.appendChild(nextBtn);
+        }
+
+        // A INTELIGÊNCIA: Mostra ou esconde as setas dependendo da página atual
+        if (slides.length <= 1) {
+            prevBtn.style.visibility = 'hidden';
+            nextBtn.style.visibility = 'hidden';
+        } else {
+            // Se estiver no primeiro card, esconde a seta de voltar. E vice-versa.
+            prevBtn.style.visibility = currentSlide > 0 ? 'visible' : 'hidden';
+            nextBtn.style.visibility = currentSlide < slides.length - 1 ? 'visible' : 'hidden';
+            
+            // Ações de clique cirúrgicas
+            prevBtn.onclick = () => { if (currentSlide > 0) switchSlide(currentSlide - 1); };
+            nextBtn.onclick = () => { if (currentSlide < slides.length - 1) switchSlide(currentSlide + 1); };
+        }
     }
 
     function switchSlide(index, callback) {
@@ -2297,7 +2810,7 @@ function injectSVGs() {
         return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
     }
 
-    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousedown', startDrag); 
     canvas.addEventListener('touchstart', startDrag, {passive: false});
     window.addEventListener('mousemove', drag);
     window.addEventListener('touchmove', drag, {passive: false});
@@ -2305,6 +2818,7 @@ function injectSVGs() {
     window.addEventListener('touchend', endDrag);
 
     function startDrag(e) {
+        if (document.getElementById('bgLockToggle').checked) return;
         if (document.getElementById('solidBgToggle').checked || !bgImage.src) return;
         isDragging = true;
         let pos = getMousePos(canvas, e);
@@ -2411,23 +2925,67 @@ function injectSVGs() {
     }
 
     async function saveProject() {
-        updateCurrentSlideState(); 
+        if (typeof updateCurrentSlideState === 'function') updateCurrentSlideState(); 
         const dataStr = JSON.stringify(slides);
         
+        // 1. Pegamos o nome que está na tela AGORA
+        const nomeNaTela = document.getElementById('pNameText').innerText.trim();
+        // Limpamos o nome para evitar caracteres que o Windows/Mac não aceitam em arquivos
+        const nomeLimpo = nomeNaTela.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/ /g, '_');
+        const nomeSugerido = (nomeLimpo || 'projeto_soter') + '.json';
+
         if ('showSaveFilePicker' in window) {
             try {
-                if (!fileHandle) {
-                    fileHandle = await window.showSaveFilePicker({ suggestedName: "soter-feed-projeto.json", types: [{ description: 'Projeto Soter', accept: {'application/json': ['.json']} }] });
+                // Se não temos um arquivo aberto ainda, pedimos para o usuário criar um
+                if (!window.fileHandle) {
+                    window.fileHandle = await window.showSaveFilePicker({ 
+                        suggestedName: nomeSugerido, 
+                        types: [{ description: 'Projeto Soter', accept: {'application/json': ['.json']} }] 
+                    });
                 }
-                document.getElementById('pNameText').innerText = fileHandle.name.replace('.json', '');
-                const writable = await fileHandle.createWritable(); await writable.write(dataStr); await writable.close(); triggerGlobalToast();
-            } catch (err) { if (err.name !== 'AbortError') fallbackSave(dataStr); }
-        } else { fallbackSave(dataStr); }
+                
+                // Atualiza o título na tela caso o usuário tenha mudado o nome dentro da janela de salvar
+                document.getElementById('pNameText').innerText = window.fileHandle.name.replace('.json', '');
+                
+                const writable = await window.fileHandle.createWritable(); 
+                await writable.write(dataStr); 
+                await writable.close(); 
+                
+                if(typeof triggerGlobalToast === 'function') triggerGlobalToast("💾 Projeto Salvo!");
+            } catch (err) { 
+                // Se o usuário cancelar a janela do sistema, não fazemos nada (evita o erro no console)
+                if (err.name !== 'AbortError') {
+                    console.error("Erro ao salvar:", err);
+                    fallbackSave(dataStr, nomeSugerido); 
+                }
+            }
+        } else { 
+            fallbackSave(dataStr, nomeSugerido); 
+        }
     }
 
     function fallbackSave(dataStr) {
-        const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a');
-        a.href = url; a.download = "soter-feed-projeto.json"; a.click(); URL.revokeObjectURL(url); triggerGlobalToast();
+        // 1. Pega o nome que o usuário acabou de digitar e está aparecendo na tela
+        let nomeNaTela = document.getElementById('pNameText').innerText.trim();
+        
+        // 2. Limpa o nome (tira espaços e caracteres que dão erro no Windows/Mac)
+        let nomeLimpo = nomeNaTela.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/ /g, '_');
+        let nomeFinal = (nomeLimpo || 'Projeto_Soter') + '.json';
+
+        // 3. Força o download silencioso com o nome perfeito
+        const blob = new Blob([dataStr], {type: "application/json"}); 
+        const url = URL.createObjectURL(blob); 
+        const a = document.createElement('a');
+        
+        a.href = url; 
+        a.download = nomeFinal; // <-- A MÁGICA ENTRA AQUI! Adeus nome genérico.
+        
+        document.body.appendChild(a); // Necessário para funcionar no Firefox
+        a.click(); 
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url); 
+        
+        if(typeof triggerGlobalToast === 'function') triggerGlobalToast("💾 Projeto Salvo!");
     }
 
     async function loadProjectModern() {
@@ -2635,28 +3193,236 @@ function injectSVGs() {
     cWrapper.addEventListener('touchend', e => {
         let swipeEndX = e.changedTouches[0].clientX;
         let swipeEndY = e.changedTouches[0].clientY;
-        let swipeTime = Date.now() - swipeStartTime; // Tempo total do toque
-        
-        let deltaX = swipeEndX - swipeStartX; // Distância arrastada na horizontal
-        let deltaY = swipeEndY - swipeStartY; // Distância arrastada na vertical
+        let swipeTime = Date.now() - swipeStartTime;
+        let deltaX = swipeEndX - swipeStartX;
+        let deltaY = swipeEndY - swipeStartY;
 
-        // Se foi um "puxão" rápido (< 400ms), majoritariamente horizontal e de pelo menos 50px
-        if (swipeTime < 400 && Math.abs(deltaX) > 50 && Math.abs(deltaY) < 100) {
+        // O Swipe agora exige ser muito rápido (< 250ms), muito longo (> 80px) e perfeitamente reto (Y < 30px)
+        if (swipeTime < 250 && Math.abs(deltaX) > 80 && Math.abs(deltaY) < 30) {
             
-            // "Hack" profissional: Desfaz o movimento acidental da foto antes de trocar de página
-            document.getElementById('posX').value = initialPosX;
-            document.getElementById('numX').value = initialPosX;
-            document.getElementById('posY').value = initialPosY;
-            document.getElementById('numY').value = initialPosY;
-            
-            // Troca o slide!
-            if (deltaX < 0 && currentSlide < slides.length - 1) {
-                switchSlide(currentSlide + 1); // Puxou pra esquerda (Avança página)
-            } else if (deltaX > 0 && currentSlide > 0) {
-                switchSlide(currentSlide - 1); // Puxou pra direita (Volta página)
+            // Reverte o dano acidental na imagem apenas se o cadeado estiver solto
+            let isLocked = document.getElementById('bgLockToggle') && document.getElementById('bgLockToggle').checked;
+            if (!isLocked) {
+                document.getElementById('posX').value = initialPosX;
+                document.getElementById('numX').value = initialPosX;
+                document.getElementById('posY').value = initialPosY;
+                document.getElementById('numY').value = initialPosY;
             }
+            
+            if (deltaX < 0 && currentSlide < slides.length - 1) switchSlide(currentSlide + 1);
+            else if (deltaX > 0 && currentSlide > 0) switchSlide(currentSlide - 1);
         }
     });
+
+    //FUNÇÕES DA EXPORTAÇÃO EM PDF
+    async function exportToPDF() {
+        if (!slides || slides.length === 0) return;
+
+        const { jsPDF } = window.jspdf;
+        const originalSlide = currentSlide; // Guarda onde você estava
+        const total = slides.length;
+        
+        triggerGlobalToast("⏳ Gerando apresentação... Aguarde.");
+
+        // Detecta as dimensões e orientação baseadas no formato atual do canvas
+        const w = canvas.width;
+        const h = canvas.height;
+        const orientation = w > h ? 'l' : 'p';
+        
+        // Cria o documento PDF com o tamanho exato do seu projeto
+        const pdf = new jsPDF({
+            orientation: orientation,
+            unit: 'px',
+            format: [w, h],
+            hotfixes: ["px_scaling"]
+        });
+
+        // Loop assíncrono para garantir que cada slide carregue antes de ir para o PDF
+        for (let i = 0; i < total; i++) {
+            // Usa a sua função switchSlide original para carregar os dados
+            await new Promise(resolve => switchSlide(i, resolve));
+            
+            // Pequena pausa para garantir que o motor de renderização (generatePreview) terminou
+            await new Promise(res => setTimeout(res, 100));
+
+            // Captura a imagem do canvas em alta qualidade
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            // Se não for a primeira página, adiciona uma nova
+            if (i > 0) pdf.addPage([w, h], orientation);
+            
+            // Cola a "foto" do slide na página do PDF
+            pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+        }
+
+        // Retorna o usuário para o slide onde ele estava trabalhando
+        switchSlide(originalSlide);
+        
+        // Define o nome do arquivo baseado no nome do projeto
+        const fileName = document.getElementById('pNameText').innerText.replace(' •', '') || 'Apresentacao_Soter';
+        pdf.save(`${fileName}.pdf`);
+        
+        triggerGlobalToast("✅ Apresentação salva com sucesso!");
+    }
+
+
+
+    //FUNÇÕES DA VITRINE
+
+    function iniciarApp(tipoLogin) {
+        if (tipoLogin === 'guest') {
+            // 1. CRIA A CORTINA DE CARREGAMENTO (Isolada, não mexe no seu CSS)
+            const loader = document.createElement('div');
+            loader.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:#001a33; z-index:99999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; transition: opacity 0.4s ease;";
+            
+            // Injeta um ícone de carregamento rodando em SVG
+            loader.innerHTML = `
+                <style>@keyframes soterSpin { 100% { transform: rotate(360deg); } }</style>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#76ce3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: soterSpin 1s linear infinite; margin-bottom: 15px;">
+                    <line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line>
+                </svg>
+                <h3 style="font-family: sans-serif; font-size: 16px; font-weight: normal; margin: 0; color: #a0aec0;">Preparando seu estúdio...</h3>
+            `;
+            document.body.appendChild(loader);
+
+            // 2. FAZ A "BAGUNÇA" ESCONDIDA ATRÁS DA CORTINA
+            setTimeout(() => {
+                const vitrine = document.getElementById('vitrineSoter');
+                const app = document.getElementById('app');
+                
+                if(vitrine) vitrine.style.display = 'none';
+                if(app) app.style.display = 'flex';
+                
+                document.getElementById('pNameText').innerText = "Novo_Projeto";
+                window.fileHandle = null;
+                window.dispatchEvent(new Event('resize'));
+
+                // Já joga o usuário para a aba de Arquivo (sua excelente ideia)
+                let btnArquivo = document.querySelector('button[onclick*="tab-project"]');
+                if (btnArquivo && typeof toggleTab === 'function') toggleTab('tab-project', btnArquivo);
+
+                // 3. APAGA A CORTINA SUAVEMENTE (Depois do Fake Load de 800ms)
+                setTimeout(() => {
+                    loader.style.opacity = '0'; // Faz o fade-out
+                    setTimeout(() => loader.remove(), 400); // Deleta o elemento do HTML depois que ficou transparente
+                }, 800); 
+
+            }, 50); // Dá um fôlego de 50ms pro navegador pintar a cortina antes de travar a tela pra renderizar o app
+
+        } else if (tipoLogin === 'google') {
+            if(typeof loginGoogle === 'function') loginGoogle();
+        }
+    }
+
+// Este código roda toda vez que a página abre
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session) {
+        // Usuário está logado! Esconde a vitrine e mostra o app
+        const vitrine = document.getElementById('vitrineSoter');
+        const app = document.getElementById('app');
+        
+        if (vitrine) vitrine.style.display = 'none';
+        if (app) {
+            app.style.display = 'flex';
+            window.dispatchEvent(new Event('resize'));
+            // Opcional: Atualiza a seção de auth interna que você já tem
+            if(typeof updateAuthUI === 'function') updateAuthUI(session.user);
+        }
+    }
+});
+
+
+
+// --- MOTOR DO CARROSSEL PUBLICITÁRIO 3D ---
+document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.getElementById('soter-fake-scene');
+    const progressBar = document.getElementById('soter-fake-autoplay-progress');
+    const timePerSlide = 5000; // 5 segundos por card
+    let currentFakeSlide = 0;
+    const totalFakeSlides = 4;
+    let fakeCarouselInterval;
+
+    // Função que faz o cubo girar e reseta a barrinha
+    function nextFakeSlide() {
+        // Zera a barrinha instantaneamente (tira a transição pra não ter delay)
+        progressBar.style.transition = 'none';
+        progressBar.style.width = '0%';
+        
+        // Calcula o próximo slide (0, 1, 2, 3)
+        currentFakeSlide = (currentFakeSlide + 1) % totalFakeSlides;
+        
+        // Aplica a classe CSS que gira o cubo (show-0, show-1, etc)
+        scene.className = 'show-' + currentFakeSlide;
+
+        // Inicia a animação da barrinha (recoloca a transição)
+        setTimeout(() => {
+            progressBar.style.transition = `width ${timePerSlide}ms linear`;
+            progressBar.style.width = '100%';
+        }, 50); // Dá um fôlego pro navegador registrar a largura 0%
+    }
+
+    // Inicia o loop automático
+    fakeCarouselInterval = setInterval(nextFakeSlide, timePerSlide);
+
+    // Inicia a primeira animação da barrinha logo de cara
+    progressBar.style.transition = `width ${timePerSlide}ms linear`;
+    progressBar.style.width = '100%';
+});
+
+
+
+// --- INICIALIZADOR DO CARROSSEL 3D COVERFLOW DA VITRINE ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Verifica se a vitrine existe antes de tentar carregar
+    if(document.getElementById('soter-vitrine-swiper')){
+        
+        const swiperVitrine = new Swiper('#soter-vitrine-swiper', {
+            // Efeito de Profundidade 3D (Netflix)
+            effect: 'coverflow',
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: 'auto', // Largura automática dos cards
+            loop: true, // Carrossel infinito
+            
+            // Configuração do Coverflow (Giro e Profundidade)
+            coverflowEffect: {
+                rotate: 15, // Ângulo de rotação dos cards laterais
+                stretch: -100, // Estica ou encolhe o espaço entre cards (puxa pro centro)
+                depth: 300, // Profundidade Z (card do meio fica mais pra frente)
+                modifier: 1,
+                slideShadows: true, // Sombras realistas no giro
+            },
+            
+            // Configuração do Autoplay
+            autoplay: {
+                delay: 6000, // 6 segundos por card
+                disableOnInteraction: false,
+            },
+
+            // Configuração das Bolhas de Paginação (Simulando o editor real)
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                renderBullet: function (index, className) {
+                    // Retorna as bolhas numeradas (1, 2, 3...) igual ao editor real
+                    return '<span class="' + className + '">' + (index + 1) + '</span>';
+                },
+            },
+
+            // Configuração das Setas Laterais Simuladas
+            navigation: {
+                nextEl: '.soter-fake-next',
+                prevEl: '.soter-fake-prev',
+            },
+
+            // Garante que o resize do canvas do app real não quebre a vitrine
+            observer: true,
+            observeParents: true,
+        });
+
+    }
+});
 </script>
 </body>
 </html>
