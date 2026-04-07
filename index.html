@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soter Feed Studio v16.4 (Rock Solid)</title>
+    <title>Soter Studio v17</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -258,12 +258,12 @@
 
         /* 🎴 ESTILO GERAL DOS CARDS FAKE (EMULANDO O CANVAS) */
         .swiper-slide {
-            background: #001a33; /* Cor base do editor */
+            width: auto !important; 
+            height: 75% !important; /* Proporção exata de 3:4 */
+            background: #001a33;
             border-radius: 12px;
             display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            width: auto; /* Deixa o swiper controlar a largura */
-            aspect-ratio: 3 / 4; /* Garante o formato 3:4 */
         }
         
         /* Simulação do Canvas interno (Cabeçalho, Conteúdo, CTA, Rodapé) */
@@ -307,6 +307,9 @@
         .swiper-slide-active { opacity: 1; transform: scale(1) !important; z-index: 20; }
         .swiper-slide-prev, .swiper-slide-next { opacity: 0.5; z-index: 10; }
         
+        .swiper-slide, .fake-canvas-content, .fake-canvas-header, .fake-canvas-footer {
+            box-sizing: border-box;
+        }
 
 
 
@@ -342,7 +345,11 @@
     flex: 1; /* Estica para preencher o fundo da tela até o header */
     padding-bottom: 20px; 
 }
-#soter-vitrine-swiper { width: 85%; max-height: 80vh; aspect-ratio: 3/4; }
+#soter-vitrine-swiper { 
+    width: 100%; 
+    padding-top: 30px; 
+    padding-bottom: 50px; 
+}
 
 
 /* =========================================
@@ -386,8 +393,8 @@
     <div class="vitrine-text-block">
         <svg class="vitrine-logo-icon" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#76ce3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
         <h2 class="vitrine-h2">Soter <span style="color: #76ce3f;">Studio</span></h2>
-        <h3 class="vitrine-h3">Crie carrosséis de alta conversão.</h3>
-        <p class="vitrine-p">O estúdio definitivo para o serviço público e criadores. Sem Photoshop, sem complicação.</p>
+        <h3 class="vitrine-h3">Crie carrosséis elegantes em esforço.</h3>
+        <p class="vitrine-p">O estúdio definitivo para cirar posts rápidos e de qualidade sem complicação</p>
         
         <div class="vitrine-buttons">
             <button onclick="iniciarApp('google')" class="btn-file btn-login-desktop" style="background: white; color: #333; font-weight: bold; padding: 16px; border-radius: 8px;">Acessar com Google</button>
@@ -418,7 +425,7 @@
                     <div class="fake-canvas-content">
                         <div class="fake-canvas-tag">Destaque</div>
                         <h4 class="fake-canvas-title">Crie e Publique em Segundos.</h4>
-                        <p class="fake-canvas-desc">O estúdio definitivo para o serviço público.</p>
+                        <p class="fake-canvas-desc">Rápido e prático como você nunca viu!</p>
                         <button onclick="iniciarApp('guest')" class="fake-canvas-cta">Começar Agora</button>
                     </div>
 
@@ -663,10 +670,22 @@
                         <div id="bgControls" style="display: none; flex-direction: column; gap: 5px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                                 <span class="label-pequena" style="margin:0;">Enquadramento no Canvas</span>
-                                <label class="checkbox-label" style="font-size:11px; color:#d9534f; margin:0;" title="Impede o toque acidental na foto">
+                                <!-- CADEADO SVG SIMPLIFICADO -->
+                                <label class="checkbox-label" style="cursor:pointer; margin:0; display:inline-flex; align-items:center; justify-content:center; padding: 5px; color: #a0aec0; transition: 0.2s;" title="Travar/Destravar Fundo">
+                                    <input type="checkbox" id="bgLockToggle" onchange="alternarCadeado(); generatePreview()" style="display:none;">
+                                    <!-- Começa com o SVG do Cadeado Aberto -->
+                                    <span id="iconeCadeado" style="display: flex;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                                        </svg>
+                                    </span>
+                                </label>
+                                
+                                <!--<label class="checkbox-label" style="font-size:11px; color:#d9534f; margin:0;" title="Impede o toque acidental na foto">
                                     <input type="checkbox" id="bgLockToggle" onchange="generatePreview()">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Travar Fundo
-                                </label>
+                                </label>-->
                             </div>
                             <div class="input-sync"><span style="font-size:10px; font-weight:bold;">ZOOM:</span><input type="range" id="zoom" min="10" max="200" value="50" oninput="sync(this, 'numZoom')"><input type="number" id="numZoom" value="50" oninput="sync(this, 'zoom')"></div>
                             <div class="input-sync"><span style="font-size:10px; font-weight:bold;">EIXO X:</span><input type="range" id="posX" min="-1000" max="1000" value="0" oninput="sync(this, 'numX')"><input type="number" id="numX" value="0" oninput="sync(this, 'posX')"></div>
@@ -794,23 +813,28 @@
                     <p style="font-size: 11px; color: #666; margin: 0 0 5px 0;">
                         <b>Dica Markdown:</b> Use <code>*marca-texto*</code>, <code>**negrito**</code>, <code>_itálico_</code>, <code>__sublinhado__</code>, <code>~tachado~</code>, ou <code>^sobrescrito^</code>.
                     </p>
+                    <!-- BARRA DE BOTÕES -->
+                    <div style="background: #ffffff; padding: 15px 0 5px 0; border-top: 1px solid #eee; display: flex; gap: 5px;">
+                        
+                        <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px; color: white; border: none; border-radius: 4px;" onclick="addTextBlock('title')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Título
+                        </button>
+                        
+                        <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px; font-weight: bold; border: none; border-radius: 4px;" onclick="addTextBlock('body')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="18" x2="3" y2="18"></line><line x1="21" y1="6" x2="3" y2="6"></line></svg> Corpo
+                        </button>
+                        
+                        <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px; font-weight: bold; border: none; border-radius: 4px;" onclick="addTextBlock('list')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Lista
+                        </button>
 
+                    </div>
                     <!-- COMPOSITOR DE BLOCOS -->
                     <div id="textBlocksContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 50px;">
                         <!-- Blocos injetados via JS -->
                     </div>
 
-                    <div style="position: sticky; bottom: 0; background: #ffffff; padding: 15px 0 5px 0; border-top: 1px solid #eee; display: flex; gap: 5px; z-index: 100;">
-                        <button type="button" class="btn-file" style="flex:1; background:#005b9f; padding:8px; font-size:11px;" onclick="addTextBlock('title')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Título
-                        </button>
-                        <button type="button" class="btn-file" style="flex:1; background:#76ce3f; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('body')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="18" x2="3" y2="18"></line><line x1="21" y1="6" x2="3" y2="6"></line></svg> Corpo
-                        </button>
-                        <button type="button" class="btn-file" style="flex:1; background:#f0b900; color:#001a33; padding:8px; font-size:11px;" onclick="addTextBlock('list')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 3px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Lista
-                        </button>
-                    </div>
+                    
                 </div>
 
                 <div id="tab-design" class="panel">
@@ -2827,6 +2851,22 @@ function injectSVGs() {
         initialPosX = parseInt(document.getElementById('posX').value) || 0;
         initialPosY = parseInt(document.getElementById('posY').value) || 0;
         generatePreview();
+    }
+
+    function alternarCadeado() {
+    const checkbox = document.getElementById('bgLockToggle');
+    const iconeSpan = document.getElementById('iconeCadeado');
+    const labelParent = checkbox.parentElement;
+    
+        if (checkbox.checked) {
+            // SVG Cadeado FECHADO e muda a cor para vermelho (ativo)
+            iconeSpan.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+            labelParent.style.color = '#d9534f';
+        } else {
+            // SVG Cadeado ABERTO e volta para a cor cinza (inativo)
+            iconeSpan.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+            labelParent.style.color = '#a0aec0';
+        }
     }
 
     function drag(e) {
